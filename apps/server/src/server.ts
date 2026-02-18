@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
+import fastifyWebsocket from '@fastify/websocket';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 
@@ -10,6 +11,7 @@ import './db/index.js';
 // Import routes
 import { projectRoutes } from './routes/projects.js';
 import { testRoutes } from './routes/tests.js';
+import { recorderRoutes } from './routes/recorder.js';
 
 const app = Fastify({
   logger: true,
@@ -33,9 +35,13 @@ await app.register(fastifyStatic, {
   decorateReply: false,
 });
 
+// WebSocket support
+await app.register(fastifyWebsocket);
+
 // Register routes
 await app.register(projectRoutes);
 await app.register(testRoutes);
+await app.register(recorderRoutes);
 
 // Health check
 app.get('/api/health', async () => {

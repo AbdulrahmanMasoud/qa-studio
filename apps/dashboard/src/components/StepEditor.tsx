@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { TestStep, actionsMeta, ActionField } from '@qa-studio/shared';
+import SelectorInput from './SelectorInput';
 
 interface StepEditorProps {
   step: TestStep;
@@ -66,6 +67,16 @@ export default function StepEditor({ step, onUpdate, onClose }: StepEditorProps)
           </label>
         );
 
+      case 'selector':
+        return (
+          <SelectorInput
+            value={value as string}
+            onChange={(selector) => onUpdate({ [field.name]: selector })}
+            placeholder={field.placeholder}
+            required={field.required}
+          />
+        );
+
       default:
         return null;
     }
@@ -124,11 +135,9 @@ export default function StepEditor({ step, onUpdate, onClose }: StepEditorProps)
           Tips
         </h3>
         <p className="text-sm text-gray-600">{meta.description}</p>
-        {step.action === 'click' && (
+        {(step.action === 'click' || step.action === 'fill' || step.action === 'hover') && (
           <p className="text-xs text-gray-500 mt-2">
-            Use CSS selectors like <code className="bg-gray-200 px-1 rounded">#id</code>,{' '}
-            <code className="bg-gray-200 px-1 rounded">.class</code>, or{' '}
-            <code className="bg-gray-200 px-1 rounded">button[type="submit"]</code>
+            Use the selector mode picker to target elements by text, role, placeholder, or CSS.
           </p>
         )}
         {step.action === 'wait' && (

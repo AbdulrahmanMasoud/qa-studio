@@ -230,11 +230,96 @@ export interface ActionMeta {
 export interface ActionField {
   name: string;
   label: string;
-  type: 'text' | 'number' | 'select' | 'checkbox';
+  type: 'text' | 'number' | 'select' | 'checkbox' | 'selector';
   required: boolean;
   placeholder?: string;
   options?: { label: string; value: string }[];
   defaultValue?: string | number | boolean;
+}
+
+// --------------------------------------------
+// Selector Helper Types & Utilities
+// --------------------------------------------
+
+export type SelectorMode = 'text' | 'role' | 'placeholder' | 'label' | 'testid' | 'css';
+
+export const selectorModes: { mode: SelectorMode; label: string; description: string }[] = [
+  { mode: 'text', label: 'Text content', description: 'Match element by its visible text' },
+  { mode: 'role', label: 'Role', description: 'Match element by ARIA role and accessible name' },
+  { mode: 'placeholder', label: 'Placeholder', description: 'Match input by placeholder text' },
+  { mode: 'label', label: 'Label', description: 'Match input by its associated label' },
+  { mode: 'testid', label: 'Test ID', description: 'Match element by data-testid attribute' },
+  { mode: 'css', label: 'CSS Selector', description: 'Advanced: raw CSS selector' },
+];
+
+export const ariaRoles = [
+  'alert', 'alertdialog', 'button', 'checkbox', 'combobox', 'dialog',
+  'heading', 'img', 'link', 'list', 'listbox', 'listitem', 'menu',
+  'menuitem', 'navigation', 'option', 'progressbar', 'radio',
+  'region', 'row', 'search', 'slider', 'spinbutton', 'switch',
+  'tab', 'tabpanel', 'textbox', 'tree', 'treeitem',
+] as const;
+
+export function buildPlaywrightSelector(
+  mode: SelectorMode,
+  value: string,
+  options?: { role?: string; name?: string }
+): string {
+  switch (mode) {
+    case 'text':
+      return value ? `text=${value}` : '';
+    case 'role': {
+      const role = options?.role || value;
+      const name = options?.name;
+      if (!role) return '';
+      return name ? `role=${role}[name="${name}"]` : `role=${role}`;
+    }
+    case 'placeholder':
+      return value ? `[placeholder="${value}"]` : '';
+    case 'label':
+      return value ? `label=${value}` : '';
+    case 'testid':
+      return value ? `data-testid=${value}` : '';
+    case 'css':
+      return value;
+    default:
+      return value;
+  }
+}
+
+export interface ParsedSelector {
+  mode: SelectorMode;
+  value: string;
+  role?: string;
+  name?: string;
+}
+
+export function parseSelectorMode(selector: string): ParsedSelector {
+  if (!selector) return { mode: 'css', value: '' };
+
+  if (selector.startsWith('text=')) {
+    return { mode: 'text', value: selector.slice(5) };
+  }
+  if (selector.startsWith('role=')) {
+    const rest = selector.slice(5);
+    const match = rest.match(/^(\w+)(?:\[name="(.*)"\])?$/);
+    if (match) {
+      return { mode: 'role', value: match[1], role: match[1], name: match[2] || '' };
+    }
+    return { mode: 'role', value: rest, role: rest };
+  }
+  if (selector.startsWith('label=')) {
+    return { mode: 'label', value: selector.slice(6) };
+  }
+  if (selector.startsWith('data-testid=')) {
+    return { mode: 'testid', value: selector.slice(12) };
+  }
+  if (selector.match(/^\[placeholder="(.*)"\]$/)) {
+    const match = selector.match(/^\[placeholder="(.*)"\]$/);
+    return { mode: 'placeholder', value: match![1] };
+  }
+
+  return { mode: 'css', value: selector };
 }
 
 export const actionsMeta: ActionMeta[] = [
@@ -253,7 +338,7 @@ export const actionsMeta: ActionMeta[] = [
     icon: '👆',
     description: 'Click on an element',
     fields: [
-      { name: 'selector', label: 'Selector', type: 'text', required: true, placeholder: '#button, .class, button[type="submit"]' },
+      { name: 'selector', label: 'Selector', type: 'selector', required: true, placeholder: '#button, .class, button[type="submit"]' },
     ],
   },
   {
@@ -262,7 +347,7 @@ export const actionsMeta: ActionMeta[] = [
     icon: '⌨️',
     description: 'Type text into an input',
     fields: [
-      { name: 'selector', label: 'Selector', type: 'text', required: true, placeholder: '#email, input[name="username"]' },
+      { name: 'selector', label: 'Selector', type: 'selector', required: true, placeholder: '#email, input[name="username"]' },
       { name: 'value', label: 'Value', type: 'text', required: true, placeholder: 'Text to type...' },
     ],
   },
@@ -272,7 +357,7 @@ export const actionsMeta: ActionMeta[] = [
     icon: '📋',
     description: 'Select an option from dropdown',
     fields: [
-      { name: 'selector', label: 'Selector', type: 'text', required: true, placeholder: 'select#country' },
+      { name: 'selector', label: 'Selector', type: 'selector', required: true, placeholder: 'select#country' },
       { name: 'value', label: 'Value', type: 'text', required: true, placeholder: 'Option value' },
     ],
   },
@@ -282,7 +367,7 @@ export const actionsMeta: ActionMeta[] = [
     icon: '☑️',
     description: 'Check a checkbox',
     fields: [
-      { name: 'selector', label: 'Selector', type: 'text', required: true, placeholder: 'input[type="checkbox"]' },
+      { name: 'selector', label: 'Selector', type: 'selector', required: true, placeholder: 'input[type="checkbox"]' },
     ],
   },
   {
@@ -291,7 +376,7 @@ export const actionsMeta: ActionMeta[] = [
     icon: '⬜',
     description: 'Uncheck a checkbox',
     fields: [
-      { name: 'selector', label: 'Selector', type: 'text', required: true, placeholder: 'input[type="checkbox"]' },
+      { name: 'selector', label: 'Selector', type: 'selector', required: true, placeholder: 'input[type="checkbox"]' },
     ],
   },
   {
@@ -300,7 +385,7 @@ export const actionsMeta: ActionMeta[] = [
     icon: '🎯',
     description: 'Hover over an element',
     fields: [
-      { name: 'selector', label: 'Selector', type: 'text', required: true, placeholder: '.menu-item' },
+      { name: 'selector', label: 'Selector', type: 'selector', required: true, placeholder: '.menu-item' },
     ],
   },
   {
@@ -364,7 +449,7 @@ export const actionsMeta: ActionMeta[] = [
         ],
         defaultValue: 'visible',
       },
-      { name: 'selector', label: 'Selector', type: 'text', required: false, placeholder: '.element (for element checks)' },
+      { name: 'selector', label: 'Selector', type: 'selector', required: false, placeholder: '.element (for element checks)' },
       {
         name: 'condition',
         label: 'Condition',
