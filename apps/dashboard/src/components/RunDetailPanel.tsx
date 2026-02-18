@@ -11,9 +11,11 @@ import {
   Camera,
   Video,
   AlertTriangle,
+  Eye,
 } from 'lucide-react';
-import { runsApi } from '../lib/api';
-import type { StepResult } from '@qa-studio/shared';
+import { runsApi, visualRegressionApi } from '../lib/api';
+import type { StepResult, ScreenshotDiff } from '@qa-studio/shared';
+import VisualDiffViewer from './VisualDiffViewer';
 import clsx from 'clsx';
 
 interface RunDetailPanelProps {
@@ -36,7 +38,6 @@ const stepStatusIcon: Record<string, { icon: typeof CheckCircle; color: string }
   skipped: { icon: MinusCircle, color: 'text-gray-400' },
 };
 
-/** Convert a filesystem path (e.g. ./data/screenshots/img.png) to a serveable URL (/data/screenshots/img.png) */
 function toDataUrl(fsPath: string): string {
   const idx = fsPath.indexOf('data/');
   if (idx !== -1) return '/' + fsPath.slice(idx);
@@ -45,6 +46,7 @@ function toDataUrl(fsPath: string): string {
 
 export default function RunDetailPanel({ runId, onBack, onClose }: RunDetailPanelProps) {
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
+  const [selectedDiff, setSelectedDiff] = useState<ScreenshotDiff | null>(null);
 
   const { data: run, isLoading } = useQuery({
     queryKey: ['run', runId],
@@ -54,6 +56,12 @@ export default function RunDetailPanel({ runId, onBack, onClose }: RunDetailPane
       if (status === 'running' || status === 'pending') return 2000;
       return false;
     },
+  });
+
+  const { data: diffs } = useQuery({
+    queryKey: ['diffs', runId],
+    queryFn: () => visualRegressionApi.getDiffs(runId),
+    enabled: !!run && (run.status === 'passed' || run.status === 'failed'),
   });
 
   if (isLoading) {
@@ -76,6 +84,10 @@ export default function RunDetailPanel({ runId, onBack, onClose }: RunDetailPane
   const passedCount = run.stepResults?.filter((s: StepResult) => s.status === 'passed').length ?? 0;
   const failedCount = run.stepResults?.filter((s: StepResult) => s.status === 'failed').length ?? 0;
   const skippedCount = run.stepResults?.filter((s: StepResult) => s.status === 'skipped').length ?? 0;
+
+  const getDiffForStep = (stepId: string): ScreenshotDiff | undefined => {
+    return diffs?.find((d) => d.stepId === stepId);
+  };
 
   return (
     <>
@@ -198,6 +210,7 @@ export default function RunDetailPanel({ runId, onBack, onClose }: RunDetailPane
                 {run.stepResults.map((result: StepResult, index: number) => {
                   const stepConfig = stepStatusIcon[result.status] || stepStatusIcon.skipped;
                   const StepIcon = stepConfig.icon;
+                  const diff = getDiffForStep(result.stepId);
 
                   return (
                     <div
@@ -217,6 +230,20 @@ export default function RunDetailPanel({ runId, onBack, onClose }: RunDetailPane
                             ? `${result.durationMs}ms`
                             : `${(result.durationMs / 1000).toFixed(1)}s`}
                         </span>
+                      )}
+                      {diff && (
+                        <button
+                          onClick={() => setSelectedDiff(diff)}
+                          className={clsx(
+                            'p-0.5 rounded',
+                            diff.status === 'mismatch' ? 'text-yellow-600 hover:text-yellow-700' :
+                            diff.status === 'match' ? 'text-green-500 hover:text-green-600' :
+                            'text-gray-400 hover:text-gray-600'
+                          )}
+                          title={`Visual diff: ${diff.status}`}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </button>
                       )}
                       {result.screenshotPath && (
                         <button
@@ -270,6 +297,14 @@ export default function RunDetailPanel({ runId, onBack, onClose }: RunDetailPane
             />
           </div>
         </div>
+      )}
+
+      {/* Visual diff viewer */}
+      {selectedDiff && (
+        <VisualDiffViewer
+          diff={selectedDiff}
+          onClose={() => setSelectedDiff(null)}
+        />
       )}
     </>
   );

@@ -14,6 +14,7 @@ interface SortableStepProps {
   onDelete: () => void;
   runStatus?: StepRunStatus;
   durationMs?: number;
+  nestingDepth?: number;
 }
 
 export default function SortableStep({
@@ -24,6 +25,7 @@ export default function SortableStep({
   onDelete,
   runStatus = null,
   durationMs,
+  nestingDepth = 0,
 }: SortableStepProps) {
   const {
     attributes,
@@ -37,6 +39,7 @@ export default function SortableStep({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    marginLeft: nestingDepth * 24,
   };
 
   const meta = actionsMeta.find((m) => m.type === step.action);
@@ -75,6 +78,18 @@ export default function SortableStep({
         return step.name || 'No name';
       case 'assert':
         return `${step.assertType}: ${step.selector ? formatSelector(step.selector) : step.value || 'No value'}`;
+      case 'use-flow':
+        return (step as any).flowName || (step as any).flowId || 'No flow selected';
+      case 'if':
+        return `if ${(step as any).condition?.type || '...'}`;
+      case 'else':
+        return '';
+      case 'end-if':
+        return '';
+      case 'loop':
+        return `while ${(step as any).condition?.type || '...'} (max ${(step as any).maxIterations || 10})`;
+      case 'end-loop':
+        return '';
       default:
         return '';
     }
@@ -95,8 +110,11 @@ export default function SortableStep({
     }
   };
 
+  const isControlFlow = ['if', 'else', 'end-if', 'loop', 'end-loop'].includes(step.action);
+
   const borderColor = () => {
     if (isSelected) return 'border-indigo-500 shadow-md';
+    if (isControlFlow) return 'border-amber-300 hover:border-amber-400';
     switch (runStatus) {
       case 'running':
         return 'border-indigo-400 shadow-md ring-1 ring-indigo-100';
@@ -112,6 +130,7 @@ export default function SortableStep({
   };
 
   const numberBadge = () => {
+    if (isControlFlow) return 'bg-amber-100 text-amber-700';
     switch (runStatus) {
       case 'passed':
         return 'bg-green-100 text-green-700';
@@ -129,8 +148,9 @@ export default function SortableStep({
       ref={setNodeRef}
       style={style}
       className={clsx(
-        'group bg-white rounded-lg border-2 transition-all',
+        'group rounded-lg border-2 transition-all',
         isDragging && 'opacity-50',
+        isControlFlow ? 'bg-amber-50' : 'bg-white',
         borderColor()
       )}
     >
