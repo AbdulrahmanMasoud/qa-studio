@@ -213,45 +213,58 @@ export default function RunDetailPanel({ runId, onBack, onClose }: RunDetailPane
                   const diff = getDiffForStep(result.stepId);
 
                   return (
-                    <div
-                      key={result.stepId}
-                      className={clsx(
-                        'flex items-center gap-2 px-3 py-2 rounded-lg text-sm',
-                        result.status === 'failed' && 'bg-red-50'
-                      )}
-                    >
-                      <StepIcon className={clsx('h-4 w-4 flex-shrink-0', stepConfig.color)} />
-                      <span className="flex-1 text-gray-700 truncate">
-                        Step {index + 1}
-                      </span>
-                      {result.durationMs != null && (
-                        <span className="text-xs text-gray-400 flex-shrink-0">
-                          {result.durationMs < 1000
-                            ? `${result.durationMs}ms`
-                            : `${(result.durationMs / 1000).toFixed(1)}s`}
+                    <div key={result.stepId}>
+                      <div
+                        className={clsx(
+                          'flex items-center gap-2 px-3 py-2 rounded-lg text-sm',
+                          result.status === 'failed' && 'bg-red-50'
+                        )}
+                      >
+                        <StepIcon className={clsx('h-4 w-4 flex-shrink-0', stepConfig.color)} />
+                        <span className="flex-1 text-gray-700 truncate">
+                          Step {index + 1}
                         </span>
-                      )}
-                      {diff && (
-                        <button
-                          onClick={() => setSelectedDiff(diff)}
-                          className={clsx(
-                            'p-0.5 rounded',
-                            diff.status === 'mismatch' ? 'text-yellow-600 hover:text-yellow-700' :
-                            diff.status === 'match' ? 'text-green-500 hover:text-green-600' :
-                            'text-gray-400 hover:text-gray-600'
-                          )}
-                          title={`Visual diff: ${diff.status}`}
-                        >
-                          <Eye className="h-3.5 w-3.5" />
-                        </button>
-                      )}
+                        {result.durationMs != null && (
+                          <span className="text-xs text-gray-400 flex-shrink-0">
+                            {result.durationMs < 1000
+                              ? `${result.durationMs}ms`
+                              : `${(result.durationMs / 1000).toFixed(1)}s`}
+                          </span>
+                        )}
+                        {diff && (
+                          <button
+                            onClick={() => setSelectedDiff(diff)}
+                            className={clsx(
+                              'p-0.5 rounded',
+                              diff.status === 'mismatch' ? 'text-yellow-600 hover:text-yellow-700' :
+                              diff.status === 'match' ? 'text-green-500 hover:text-green-600' :
+                              'text-gray-400 hover:text-gray-600'
+                            )}
+                            title={`Visual diff: ${diff.status}`}
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      {/* Screenshot thumbnail for screenshot steps */}
                       {result.screenshotPath && (
                         <button
                           onClick={() => setScreenshotUrl(toDataUrl(result.screenshotPath!))}
-                          className="p-0.5 text-gray-400 hover:text-gray-600"
-                          title="View screenshot"
+                          className="ml-6 mt-1 mb-2 group cursor-pointer"
                         >
-                          <Camera className="h-3.5 w-3.5" />
+                          <div className="relative rounded-lg overflow-hidden border border-gray-200 hover:border-indigo-400 transition-colors">
+                            <img
+                              src={toDataUrl(result.screenshotPath!)}
+                              alt={`Step ${index + 1} screenshot`}
+                              className="w-full h-24 object-cover object-top"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                              <span className="hidden group-hover:flex items-center gap-1 text-xs text-white bg-black/60 px-2 py-1 rounded">
+                                <Camera className="h-3 w-3" />
+                                View full size
+                              </span>
+                            </div>
+                          </div>
                         </button>
                       )}
                     </div>

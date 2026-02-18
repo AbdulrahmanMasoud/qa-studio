@@ -528,7 +528,8 @@ export async function runTest(test: TestDefinition, onProgress?: (run: Partial<T
               createdAt: now,
             });
           }
-        } catch {
+        } catch (diffErr) {
+          console.error('Visual diff error:', diffErr);
           // Don't fail the step if visual diff fails
         }
       }

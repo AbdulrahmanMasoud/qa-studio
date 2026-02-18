@@ -29,7 +29,11 @@ export async function visualRegressionRoutes(app: FastifyInstance) {
         return reply.status(400).send({ error: 'No screenshots in this run' });
       }
 
-      // Delete existing baselines for this test
+      // Delete diffs referencing existing baselines, then delete the baselines
+      const existingBaselines = db.select().from(baselines).where(eq(baselines.testId, testId)).all();
+      for (const b of existingBaselines) {
+        await db.delete(screenshotDiffs).where(eq(screenshotDiffs.baselineId, b.id));
+      }
       await db.delete(baselines).where(eq(baselines.testId, testId));
 
       const now = new Date().toISOString();
@@ -93,6 +97,7 @@ export async function visualRegressionRoutes(app: FastifyInstance) {
     const baseline = await db.select().from(baselines).where(eq(baselines.id, id)).get();
     if (!baseline) return reply.status(404).send({ error: 'Baseline not found' });
 
+    await db.delete(screenshotDiffs).where(eq(screenshotDiffs.baselineId, id));
     await db.delete(baselines).where(eq(baselines.id, id));
     return { success: true };
   });
