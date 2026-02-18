@@ -1,8 +1,10 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2 } from 'lucide-react';
-import { TestStep, actionsMeta } from '@qa-studio/shared';
+import { GripVertical, Trash2, CheckCircle, XCircle, Loader2, MinusCircle } from 'lucide-react';
+import { TestStep, actionsMeta, parseSelectorMode, selectorModes } from '@qa-studio/shared';
 import clsx from 'clsx';
+
+export type StepRunStatus = 'running' | 'passed' | 'failed' | 'skipped' | null;
 
 interface SortableStepProps {
   step: TestStep;
@@ -10,6 +12,8 @@ interface SortableStepProps {
   isSelected: boolean;
   onSelect: () => void;
   onDelete: () => void;
+  runStatus?: StepRunStatus;
+  durationMs?: number;
 }
 
 export default function SortableStep({
@@ -18,6 +22,8 @@ export default function SortableStep({
   isSelected,
   onSelect,
   onDelete,
+  runStatus = null,
+  durationMs,
 }: SortableStepProps) {
   const {
     attributes,
@@ -35,6 +41,17 @@ export default function SortableStep({
 
   const meta = actionsMeta.find((m) => m.type === step.action);
 
+  const formatSelector = (selector: string): string => {
+    if (!selector) return 'No selector';
+    const parsed = parseSelectorMode(selector);
+    const modeLabel = selectorModes.find((m) => m.mode === parsed.mode)?.label || parsed.mode;
+    if (parsed.mode === 'css') return selector;
+    if (parsed.mode === 'role') {
+      return parsed.name ? `${modeLabel}: ${parsed.role}["${parsed.name}"]` : `${modeLabel}: ${parsed.role}`;
+    }
+    return `${modeLabel}: "${parsed.value}"`;
+  };
+
   const getStepSummary = () => {
     switch (step.action) {
       case 'goto':
@@ -43,11 +60,11 @@ export default function SortableStep({
       case 'hover':
       case 'check':
       case 'uncheck':
-        return step.selector || 'No selector';
+        return formatSelector(step.selector);
       case 'fill':
-        return `${step.selector || 'No selector'} → "${step.value || ''}"`;
+        return `${formatSelector(step.selector)} → "${step.value || ''}"`;
       case 'select':
-        return `${step.selector || 'No selector'} → "${step.value || ''}"`;
+        return `${formatSelector(step.selector)} → "${step.value || ''}"`;
       case 'press':
         return step.key || 'No key';
       case 'wait':
@@ -57,9 +74,53 @@ export default function SortableStep({
       case 'screenshot':
         return step.name || 'No name';
       case 'assert':
-        return `${step.assertType}: ${step.selector || step.value || 'No value'}`;
+        return `${step.assertType}: ${step.selector ? formatSelector(step.selector) : step.value || 'No value'}`;
       default:
         return '';
+    }
+  };
+
+  const statusIcon = () => {
+    switch (runStatus) {
+      case 'running':
+        return <Loader2 className="h-5 w-5 text-indigo-500 animate-spin" />;
+      case 'passed':
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
+      case 'failed':
+        return <XCircle className="h-5 w-5 text-red-500" />;
+      case 'skipped':
+        return <MinusCircle className="h-5 w-5 text-gray-300" />;
+      default:
+        return null;
+    }
+  };
+
+  const borderColor = () => {
+    if (isSelected) return 'border-indigo-500 shadow-md';
+    switch (runStatus) {
+      case 'running':
+        return 'border-indigo-400 shadow-md ring-1 ring-indigo-100';
+      case 'passed':
+        return 'border-green-300';
+      case 'failed':
+        return 'border-red-300';
+      case 'skipped':
+        return 'border-gray-200 opacity-50';
+      default:
+        return 'border-gray-200 hover:border-gray-300';
+    }
+  };
+
+  const numberBadge = () => {
+    switch (runStatus) {
+      case 'passed':
+        return 'bg-green-100 text-green-700';
+      case 'failed':
+        return 'bg-red-100 text-red-700';
+      case 'running':
+        return 'bg-indigo-100 text-indigo-700';
+      default:
+        return 'bg-gray-100 text-gray-600';
     }
   };
 
@@ -70,9 +131,7 @@ export default function SortableStep({
       className={clsx(
         'group bg-white rounded-lg border-2 transition-all',
         isDragging && 'opacity-50',
-        isSelected
-          ? 'border-indigo-500 shadow-md'
-          : 'border-gray-200 hover:border-gray-300'
+        borderColor()
       )}
     >
       <div className="flex items-center gap-3 p-4">
@@ -86,7 +145,10 @@ export default function SortableStep({
         </button>
 
         {/* Step number */}
-        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-sm font-medium flex items-center justify-center">
+        <span className={clsx(
+          'flex-shrink-0 w-6 h-6 rounded-full text-sm font-medium flex items-center justify-center transition-colors',
+          numberBadge()
+        )}>
           {index + 1}
         </span>
 
@@ -103,16 +165,30 @@ export default function SortableStep({
           </div>
         </div>
 
-        {/* Delete button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+        {/* Run status indicator / duration */}
+        {runStatus && (
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {durationMs != null && runStatus !== 'running' && runStatus !== 'skipped' && (
+              <span className="text-xs text-gray-400 tabular-nums">
+                {durationMs < 1000 ? `${durationMs}ms` : `${(durationMs / 1000).toFixed(1)}s`}
+              </span>
+            )}
+            {statusIcon()}
+          </div>
+        )}
+
+        {/* Delete button (hidden during run) */}
+        {!runStatus && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
       </div>
     </div>
   );

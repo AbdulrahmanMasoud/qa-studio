@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -26,19 +26,23 @@ import {
   XCircle,
   Loader2,
   History,
+  Video,
+  StopCircle,
 } from 'lucide-react';
-import { testsApi } from '../lib/api';
+import { testsApi, recorderApi } from '../lib/api';
 import {
   TestStep,
+  StepResult,
   ActionType,
   createEmptyStep,
 } from '@qa-studio/shared';
 import clsx from 'clsx';
-import SortableStep from '../components/SortableStep';
+import SortableStep, { StepRunStatus } from '../components/SortableStep';
 import ActionPalette from '../components/ActionPalette';
 import StepEditor from '../components/StepEditor';
 import RunHistoryPanel from '../components/RunHistoryPanel';
 import RunDetailPanel from '../components/RunDetailPanel';
+import RecorderBar from '../components/RecorderBar';
 
 export default function TestBuilderPage() {
   const { testId } = useParams<{ testId: string }>();
@@ -58,6 +62,19 @@ export default function TestBuilderPage() {
     error?: string;
   } | null>(null);
 
+  // Live run progress state
+  const [liveStepResults, setLiveStepResults] = useState<Map<string, StepResult>>(new Map());
+  const [runningStepIndex, setRunningStepIndex] = useState<number>(-1);
+
+  // Recorder state
+  const [isRecorderOpen, setIsRecorderOpen] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isRecorderStarting, setIsRecorderStarting] = useState(false);
+  const [recorderSessionId, setRecorderSessionId] = useState<string | null>(null);
+  const [recordedStepCount, setRecordedStepCount] = useState(0);
+  const [recorderUrl, setRecorderUrl] = useState('');
+  const wsRef = useRef<WebSocket | null>(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -75,8 +92,21 @@ export default function TestBuilderPage() {
     if (test) {
       setSteps(test.steps || []);
       setUseRealChrome(test.config?.useRealChrome ?? false);
+      if (test.projectId) {
+        // We don't have baseUrl from project here, so leave recorderUrl as-is if already set
+      }
     }
   }, [test]);
+
+  // Cleanup WebSocket on unmount
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+    };
+  }, []);
 
   const saveMutation = useMutation({
     mutationFn: (stepsToSave: TestStep[]) =>
@@ -91,10 +121,30 @@ export default function TestBuilderPage() {
   });
 
   const runMutation = useMutation({
-    mutationFn: () => testsApi.run(testId!),
+    mutationFn: () =>
+      testsApi.runWithProgress(testId!, (stepResult, stepIndex) => {
+        // A step just finished — update live results
+        setLiveStepResults((prev) => {
+          const next = new Map(prev);
+          next.set(stepResult.stepId, stepResult);
+          return next;
+        });
+        // The *next* step is now running (if this one passed)
+        if (stepResult.status === 'passed') {
+          setRunningStepIndex(stepIndex + 1);
+        } else {
+          // Failed or skipped — no more running step
+          setRunningStepIndex(-1);
+        }
+      }),
     onMutate: () => {
       setIsRunning(true);
       setLastRunResult(null);
+      setLiveStepResults(new Map());
+      setRunningStepIndex(0);
+      setSelectedStepId(null);
+      setSelectedRunId(null);
+      setShowRunHistory(false);
     },
     onSuccess: (result) => {
       setLastRunResult({
@@ -102,17 +152,93 @@ export default function TestBuilderPage() {
         durationMs: result.durationMs,
         error: result.error,
       });
-      // Auto-open the run detail view
       setSelectedRunId(result.id);
       setSelectedStepId(null);
       setShowRunHistory(false);
-      // Invalidate runs cache so history stays current
       queryClient.invalidateQueries({ queryKey: ['runs', testId] });
     },
     onSettled: () => {
       setIsRunning(false);
+      setRunningStepIndex(-1);
     },
   });
+
+  // --- Recorder handlers ---
+  const handleStartRecording = useCallback(async () => {
+    if (!testId || !recorderUrl) return;
+    setIsRecorderStarting(true);
+    try {
+      const { sessionId } = await recorderApi.start(testId, recorderUrl);
+      setRecorderSessionId(sessionId);
+      setIsRecording(true);
+      setRecordedStepCount(0);
+
+      // Skip the initial goto step that will come from the navigation
+      let isFirstGoto = true;
+
+      // Open WebSocket to receive steps
+      const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+      const ws = new WebSocket(`${protocol}://${window.location.host}/api/recorder/ws?sessionId=${sessionId}`);
+      wsRef.current = ws;
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'step') {
+            // Skip the first goto (initial navigation we triggered)
+            if (isFirstGoto && data.step.action === 'goto') {
+              isFirstGoto = false;
+              return;
+            }
+            isFirstGoto = false;
+            setSteps((prev) => [...prev, data.step]);
+            setRecordedStepCount((prev) => prev + 1);
+            setHasChanges(true);
+          } else if (data.type === 'disconnect') {
+            // Browser was closed by user
+            setIsRecording(false);
+            setIsRecorderOpen(false);
+            setRecorderSessionId(null);
+          }
+        } catch {
+          // ignore parse errors
+        }
+      };
+
+      ws.onclose = () => {
+        wsRef.current = null;
+      };
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+    } finally {
+      setIsRecorderStarting(false);
+    }
+  }, [testId, recorderUrl]);
+
+  const handleStopRecording = useCallback(async () => {
+    if (recorderSessionId) {
+      try {
+        await recorderApi.stop(recorderSessionId);
+      } catch {
+        // session may already be closed
+      }
+    }
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    setIsRecording(false);
+    setIsRecorderOpen(false);
+    setRecorderSessionId(null);
+  }, [recorderSessionId]);
+
+  const handleToggleRecorder = () => {
+    if (isRecording) {
+      handleStopRecording();
+    } else {
+      setIsRecorderOpen((prev) => !prev);
+    }
+  };
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -206,6 +332,18 @@ export default function TestBuilderPage() {
     setSelectedRunId(null);
   };
 
+  const getStepRunStatus = (step: TestStep, index: number): StepRunStatus => {
+    if (!isRunning) return null;
+    const result = liveStepResults.get(step.id);
+    if (result) return result.status as StepRunStatus;
+    if (index === runningStepIndex) return 'running';
+    return null;
+  };
+
+  const getStepDuration = (stepId: string): number | undefined => {
+    return liveStepResults.get(stepId)?.durationMs;
+  };
+
   const selectedStep = steps.find((s) => s.id === selectedStepId);
   const activeStep = steps.find((s) => s.id === activeId);
 
@@ -288,6 +426,34 @@ export default function TestBuilderPage() {
               </button>
             </label>
             <button
+              onClick={handleToggleRecorder}
+              disabled={isRunning}
+              className={clsx(
+                'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                isRecording
+                  ? 'bg-red-600 text-white shadow-sm hover:bg-red-700'
+                  : isRecorderOpen
+                    ? 'bg-red-100 text-red-700 ring-1 ring-red-200'
+                    : 'text-red-600 bg-red-50 hover:bg-red-100 ring-1 ring-red-200/60'
+              )}
+            >
+              {isRecording ? (
+                <>
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white" />
+                  </span>
+                  <StopCircle className="h-4 w-4" />
+                  Stop
+                </>
+              ) : (
+                <>
+                  <Video className="h-4 w-4" />
+                  Record
+                </>
+              )}
+            </button>
+            <button
               onClick={handleToggleRunHistory}
               className={clsx(
                 'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
@@ -323,6 +489,20 @@ export default function TestBuilderPage() {
         </div>
       </header>
 
+      {/* Recorder bar */}
+      {(isRecorderOpen || isRecording) && (
+        <RecorderBar
+          isRecording={isRecording}
+          isStarting={isRecorderStarting}
+          recordedStepCount={recordedStepCount}
+          startUrl={recorderUrl}
+          onStartUrlChange={setRecorderUrl}
+          onStart={handleStartRecording}
+          onStop={handleStopRecording}
+          onClose={() => setIsRecorderOpen(false)}
+        />
+      )}
+
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Action palette */}
@@ -356,6 +536,8 @@ export default function TestBuilderPage() {
                       isSelected={selectedStepId === step.id}
                       onSelect={() => handleSelectStep(step.id)}
                       onDelete={() => handleDeleteStep(step.id)}
+                      runStatus={getStepRunStatus(step, index)}
+                      durationMs={getStepDuration(step.id)}
                     />
                   ))}
                 </div>

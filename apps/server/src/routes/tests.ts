@@ -153,16 +153,16 @@ export async function testRoutes(app: FastifyInstance) {
     return { success: true };
   });
 
-  // Run test
+  // Run test (SSE stream for live progress)
   app.post<{ Params: { id: string } }>('/api/tests/:id/run', async (request, reply) => {
     const { id } = request.params;
-    
+
     const test = await db.select().from(tests).where(eq(tests.id, id)).get();
-    
+
     if (!test) {
       return reply.status(404).send({ error: 'Test not found' });
     }
-    
+
     // Run the test
     const testDef = {
       id: test.id,
@@ -174,10 +174,34 @@ export async function testRoutes(app: FastifyInstance) {
       createdAt: test.createdAt,
       updatedAt: test.updatedAt,
     };
-    
-    const result = await runTest(testDef);
-    
-    return result;
+
+    // Check if client wants SSE streaming
+    const wantsStream = request.headers.accept === 'text/event-stream';
+
+    if (!wantsStream) {
+      // Legacy: return full result at once
+      const result = await runTest(testDef);
+      return result;
+    }
+
+    // SSE: stream step-by-step progress
+    reply.raw.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    });
+
+    const result = await runTest(testDef, (progress) => {
+      const latest = progress.stepResults;
+      if (latest && latest.length > 0) {
+        const lastResult = latest[latest.length - 1];
+        reply.raw.write(`data: ${JSON.stringify({ type: 'step-result', stepResult: lastResult, stepIndex: latest.length - 1 })}\n\n`);
+      }
+    });
+
+    reply.raw.write(`data: ${JSON.stringify({ type: 'complete', run: result })}\n\n`);
+    reply.raw.end();
+    return reply;
   });
 
   // Get runs for a test
