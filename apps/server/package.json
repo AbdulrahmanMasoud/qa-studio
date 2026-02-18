@@ -1,0 +1,31 @@
+{
+  "name": "@qa-studio/server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "db:push": "drizzle-kit push:sqlite",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@fastify/cors": "^8.5.0",
+    "@fastify/static": "^6.12.0",
+    "@fastify/websocket": "^8.3.1",
+    "@qa-studio/shared": "workspace:*",
+    "better-sqlite3": "^12.6.2",
+    "drizzle-orm": "^0.29.3",
+    "fastify": "^4.25.2",
+    "nanoid": "^5.0.4",
+    "playwright": "^1.41.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20.10.6",
+    "drizzle-kit": "^0.20.10",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

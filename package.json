@@ -1,0 +1,25 @@
+{
+  "name": "qa-studio",
+  "version": "1.0.0",
+  "description": "No-code E2E testing tool powered by Playwright",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "dev:server": "pnpm --filter @qa-studio/server dev",
+    "dev:dashboard": "pnpm --filter @qa-studio/dashboard dev",
+    "build": "pnpm run --parallel build",
+    "db:push": "pnpm --filter @qa-studio/server db:push",
+    "db:studio": "pnpm --filter @qa-studio/server db:studio",
+    "playwright:install": "pnpm --filter @qa-studio/server exec playwright install chromium firefox webkit",
+    "setup": "pnpm install && pnpm playwright:install && pnpm db:push"
+  },
+  "keywords": ["testing", "e2e", "playwright", "qa", "no-code"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3"]
+  }
+}
