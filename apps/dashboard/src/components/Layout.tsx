@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { FlaskConical, FolderKanban, Workflow } from 'lucide-react';
+import { FlaskConical, FolderKanban } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function Layout() {
@@ -34,22 +34,6 @@ export default function Layout() {
                 Projects
               </Link>
             </li>
-            {location.pathname.match(/\/projects\/([^/]+)/) && (
-              <li>
-                <Link
-                  to={`/projects/${location.pathname.match(/\/projects\/([^/]+)/)?.[1]}/flows`}
-                  className={clsx(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
-                    location.pathname.includes('/flows')
-                      ? 'bg-purple-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-800'
-                  )}
-                >
-                  <Workflow className="h-5 w-5" />
-                  Flows
-                </Link>
-              </li>
-            )}
           </ul>
         </nav>
 

@@ -14,8 +14,9 @@ import {
   Settings,
   PlayCircle,
   BarChart3,
+  Workflow,
 } from 'lucide-react';
-import { projectsApi, testsApi, suiteRunsApi } from '../lib/api';
+import { projectsApi, testsApi, suiteRunsApi, analyticsApi } from '../lib/api';
 import EnvironmentVariablesModal from '../components/EnvironmentVariablesModal';
 import BatchRunProgress, { BatchTestStatus } from '../components/BatchRunProgress';
 import clsx from 'clsx';
@@ -41,6 +42,12 @@ export default function TestsPage() {
   const { data: tests, isLoading } = useQuery({
     queryKey: ['tests', projectId],
     queryFn: () => testsApi.listByProject(projectId!),
+    enabled: !!projectId,
+  });
+
+  const { data: summary } = useQuery({
+    queryKey: ['analytics', 'summary', projectId],
+    queryFn: () => analyticsApi.summary(projectId!),
     enabled: !!projectId,
   });
 
@@ -179,6 +186,13 @@ export default function TestsPage() {
               <Settings className="h-4 w-4" />
               Variables
             </button>
+            <Link
+              to={`/projects/${projectId}/flows`}
+              className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <Workflow className="h-4 w-4" />
+              Flows
+            </Link>
             <div className="flex items-center gap-2">
               <select
                 value={concurrency}
@@ -218,6 +232,42 @@ export default function TestsPage() {
           onClose={() => setShowVariables(false)}
           isSaving={variablesMutation.isPending}
         />
+      )}
+
+      {/* Summary cards */}
+      {summary && (
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <FileCode className="h-4 w-4 text-indigo-500" />
+              <span className="text-xs text-gray-500">Total Tests</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{summary.totalTests}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span className="text-xs text-gray-500">Pass Rate</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{summary.passRate}%</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Play className="h-4 w-4 text-blue-500" />
+              <span className="text-xs text-gray-500">Total Runs</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{summary.totalRuns}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="h-4 w-4 text-yellow-500" />
+              <span className="text-xs text-gray-500">Avg Duration</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">
+              {summary.avgDuration ? `${(summary.avgDuration / 1000).toFixed(1)}s` : '—'}
+            </p>
+          </div>
+        </div>
       )}
 
       {/* Batch run progress */}

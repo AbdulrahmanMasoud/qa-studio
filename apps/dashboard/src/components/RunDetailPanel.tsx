@@ -248,24 +248,50 @@ export default function RunDetailPanel({ runId, onBack, onClose }: RunDetailPane
                       </div>
                       {/* Screenshot thumbnail for screenshot steps */}
                       {result.screenshotPath && (
-                        <button
-                          onClick={() => setScreenshotUrl(toDataUrl(result.screenshotPath!))}
-                          className="ml-6 mt-1 mb-2 group cursor-pointer"
-                        >
-                          <div className="relative rounded-lg overflow-hidden border border-gray-200 hover:border-indigo-400 transition-colors">
-                            <img
-                              src={toDataUrl(result.screenshotPath!)}
-                              alt={`Step ${index + 1} screenshot`}
-                              className="w-full h-24 object-cover object-top"
-                            />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                              <span className="hidden group-hover:flex items-center gap-1 text-xs text-white bg-black/60 px-2 py-1 rounded">
-                                <Camera className="h-3 w-3" />
-                                View full size
-                              </span>
+                        <div className="ml-6 mt-1 mb-2">
+                          <button
+                            onClick={() => setScreenshotUrl(toDataUrl(result.screenshotPath!))}
+                            className="group cursor-pointer w-full"
+                          >
+                            <div className={clsx(
+                              'relative rounded-lg overflow-hidden border transition-colors',
+                              diff?.status === 'rejected' ? 'border-red-400' :
+                              diff?.status === 'mismatch' ? 'border-yellow-400' :
+                              diff?.status === 'approved' ? 'border-blue-400' :
+                              'border-gray-200 hover:border-indigo-400'
+                            )}>
+                              <img
+                                src={toDataUrl(result.screenshotPath!)}
+                                alt={`Step ${index + 1} screenshot`}
+                                className="w-full h-24 object-cover object-top"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                <span className="hidden group-hover:flex items-center gap-1 text-xs text-white bg-black/60 px-2 py-1 rounded">
+                                  <Camera className="h-3 w-3" />
+                                  View full size
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </button>
+                          </button>
+                          {/* Visual diff status badge */}
+                          {diff && (
+                            <button
+                              onClick={() => setSelectedDiff(diff)}
+                              className={clsx(
+                                'mt-1.5 inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium w-full justify-center',
+                                diff.status === 'rejected' && 'bg-red-100 text-red-700 hover:bg-red-200',
+                                diff.status === 'mismatch' && 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200',
+                                diff.status === 'approved' && 'bg-blue-100 text-blue-700 hover:bg-blue-200',
+                                diff.status === 'match' && 'bg-green-100 text-green-700 hover:bg-green-200',
+                              )}
+                            >
+                              {diff.status === 'rejected' && <><XCircle className="h-3 w-3" /> Visual Rejected</>}
+                              {diff.status === 'mismatch' && <><AlertTriangle className="h-3 w-3" /> Visual Mismatch — {((diff.diffPercentage ?? 0) / 100).toFixed(1)}%</>}
+                              {diff.status === 'approved' && <><CheckCircle className="h-3 w-3" /> Visual Approved</>}
+                              {diff.status === 'match' && <><CheckCircle className="h-3 w-3" /> Visual Match</>}
+                            </button>
+                          )}
+                        </div>
                       )}
                     </div>
                   );

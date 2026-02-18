@@ -71,7 +71,12 @@ export function compareScreenshots(
     diff.data,
     width,
     height,
-    { threshold: 0.1 }
+    {
+      threshold: 0.1,
+      alpha: 0.15,
+      diffColor: [255, 0, 0],
+      diffColorAlt: [255, 165, 0],
+    }
   );
 
   const totalPixels = width * height;
