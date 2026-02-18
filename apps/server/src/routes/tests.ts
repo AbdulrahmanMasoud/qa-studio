@@ -4,11 +4,11 @@ import { db } from '../db/index.js';
 import { tests, projects, runs } from '../db/schema.js';
 import { eq, desc } from 'drizzle-orm';
 import { generateId, defaultTestConfig, TestStep, TestConfig } from '@qa-studio/shared';
-import { runTest } from '../services/runner.js';
+import { runTest, createFlowResolver } from '../services/runner.js';
 
 const testStepSchema = z.object({
   id: z.string(),
-  action: z.enum(['goto', 'click', 'fill', 'select', 'check', 'uncheck', 'hover', 'press', 'wait', 'screenshot', 'assert']),
+  action: z.enum(['goto', 'click', 'fill', 'select', 'check', 'uncheck', 'hover', 'press', 'wait', 'screenshot', 'assert', 'use-flow', 'if', 'else', 'end-if', 'loop', 'end-loop']),
   url: z.string().optional(),
   selector: z.string().optional(),
   value: z.union([z.string(), z.number()]).optional(),
@@ -17,8 +17,19 @@ const testStepSchema = z.object({
   name: z.string().optional(),
   fullPage: z.boolean().optional(),
   assertType: z.enum(['visible', 'hidden', 'text', 'url', 'title', 'value']).optional(),
-  condition: z.enum(['equals', 'contains', 'matches']).optional(),
+  condition: z.union([
+    z.enum(['equals', 'contains', 'matches']),
+    z.object({
+      type: z.enum(['element-exists', 'element-not-exists', 'variable-equals', 'variable-contains', 'url-matches', 'url-contains']),
+      selector: z.string().optional(),
+      variable: z.string().optional(),
+      value: z.string().optional(),
+    }),
+  ]).optional(),
   description: z.string().optional(),
+  flowId: z.string().optional(),
+  flowName: z.string().optional(),
+  maxIterations: z.number().optional(),
 });
 
 const testConfigSchema = z.object({
@@ -138,6 +149,35 @@ export async function testRoutes(app: FastifyInstance) {
     return { ...existing, ...updated };
   });
 
+  // Clone test
+  app.post<{ Params: { id: string } }>('/api/tests/:id/clone', async (request, reply) => {
+    const { id } = request.params;
+
+    const existing = await db.select().from(tests).where(eq(tests.id, id)).get();
+
+    if (!existing) {
+      return reply.status(404).send({ error: 'Test not found' });
+    }
+
+    const now = new Date().toISOString();
+    const existingSteps = existing.steps as TestStep[];
+
+    const clonedTest = {
+      id: generateId(),
+      projectId: existing.projectId,
+      name: `${existing.name} (Copy)`,
+      description: existing.description,
+      config: existing.config,
+      steps: existingSteps.map((step) => ({ ...step, id: generateId() })),
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await db.insert(tests).values(clonedTest);
+
+    return reply.status(201).send(clonedTest);
+  });
+
   // Delete test
   app.delete<{ Params: { id: string } }>('/api/tests/:id', async (request, reply) => {
     const { id } = request.params;
@@ -163,6 +203,10 @@ export async function testRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'Test not found' });
     }
 
+    // Fetch project variables
+    const project = await db.select().from(projects).where(eq(projects.id, test.projectId)).get();
+    const variables = (project?.variables as Record<string, string>) || undefined;
+
     // Run the test
     const testDef = {
       id: test.id,
@@ -180,7 +224,7 @@ export async function testRoutes(app: FastifyInstance) {
 
     if (!wantsStream) {
       // Legacy: return full result at once
-      const result = await runTest(testDef);
+      const result = await runTest(testDef, undefined, variables);
       return result;
     }
 
@@ -197,7 +241,7 @@ export async function testRoutes(app: FastifyInstance) {
         const lastResult = latest[latest.length - 1];
         reply.raw.write(`data: ${JSON.stringify({ type: 'step-result', stepResult: lastResult, stepIndex: latest.length - 1 })}\n\n`);
       }
-    });
+    }, variables);
 
     reply.raw.write(`data: ${JSON.stringify({ type: 'complete', run: result })}\n\n`);
     reply.raw.end();

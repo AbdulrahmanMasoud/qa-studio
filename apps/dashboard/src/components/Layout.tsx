@@ -25,7 +25,7 @@ export default function Layout() {
                 to="/projects"
                 className={clsx(
                   'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
-                  location.pathname.startsWith('/projects')
+                  location.pathname.startsWith('/projects') || location.pathname.startsWith('/tests')
                     ? 'bg-indigo-600 text-white'
                     : 'text-gray-300 hover:bg-gray-800'
                 )}

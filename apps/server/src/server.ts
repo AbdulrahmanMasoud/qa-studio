@@ -12,6 +12,10 @@ import './db/index.js';
 import { projectRoutes } from './routes/projects.js';
 import { testRoutes } from './routes/tests.js';
 import { recorderRoutes } from './routes/recorder.js';
+import { suiteRoutes } from './routes/suites.js';
+import { analyticsRoutes } from './routes/analytics.js';
+import { flowRoutes } from './routes/flows.js';
+import { visualRegressionRoutes } from './routes/visual-regression.js';
 
 const app = Fastify({
   logger: true,
@@ -42,6 +46,10 @@ await app.register(fastifyWebsocket);
 await app.register(projectRoutes);
 await app.register(testRoutes);
 await app.register(recorderRoutes);
+await app.register(suiteRoutes);
+await app.register(analyticsRoutes);
+await app.register(flowRoutes);
+await app.register(visualRegressionRoutes);
 
 // Health check
 app.get('/api/health', async () => {

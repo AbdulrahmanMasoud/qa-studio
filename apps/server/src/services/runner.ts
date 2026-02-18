@@ -11,8 +11,36 @@ import {
   generateId,
 } from '@qa-studio/shared';
 import { db } from '../db/index.js';
-import { runs } from '../db/schema.js';
+import { runs, flows, baselines, screenshotDiffs } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+import { substituteStepVariables } from './variables.js';
+import { compareScreenshots } from './visual-diff.js';
+
+export type FlowResolver = (flowId: string) => TestStep[] | null;
+
+function resolveFlows(steps: TestStep[], resolver: FlowResolver, depth = 0): TestStep[] {
+  if (depth > 10) throw new Error('Maximum flow nesting depth exceeded (10)');
+
+  const resolved: TestStep[] = [];
+  for (const step of steps) {
+    if (step.action === 'use-flow') {
+      const flowSteps = resolver((step as any).flowId);
+      if (flowSteps) {
+        resolved.push(...resolveFlows(flowSteps, resolver, depth + 1));
+      }
+    } else {
+      resolved.push(step);
+    }
+  }
+  return resolved;
+}
+
+export function createFlowResolver(): FlowResolver {
+  return (flowId: string) => {
+    const flow = db.select().from(flows).where(eq(flows.id, flowId)).get();
+    return flow ? (flow.steps as TestStep[]) : null;
+  };
+}
 
 const DATA_DIR = './data';
 
@@ -202,8 +230,76 @@ function assertCondition(actual: string, expected: string, condition: string) {
   }
 }
 
+// Evaluate a step condition (for if/loop)
+async function evaluateCondition(
+  page: Page,
+  condition: { type: string; selector?: string; variable?: string; value?: string },
+  variables?: Record<string, string>
+): Promise<boolean> {
+  switch (condition.type) {
+    case 'element-exists':
+      try {
+        const el = await page.$(condition.selector || '');
+        return el !== null;
+      } catch { return false; }
+
+    case 'element-not-exists':
+      try {
+        const el = await page.$(condition.selector || '');
+        return el === null;
+      } catch { return true; }
+
+    case 'variable-equals':
+      return (variables?.[condition.variable || ''] || '') === (condition.value || '');
+
+    case 'variable-contains':
+      return (variables?.[condition.variable || ''] || '').includes(condition.value || '');
+
+    case 'url-matches':
+      try {
+        return new RegExp(condition.value || '').test(page.url());
+      } catch { return false; }
+
+    case 'url-contains':
+      return page.url().includes(condition.value || '');
+
+    default:
+      return false;
+  }
+}
+
+// Find matching else or end-if for an if at the given index
+function findMatchingElseOrEndIf(steps: TestStep[], ifIndex: number): { elseIndex: number; endIfIndex: number } {
+  let depth = 0;
+  let elseIndex = -1;
+
+  for (let i = ifIndex + 1; i < steps.length; i++) {
+    if (steps[i].action === 'if') depth++;
+    else if (steps[i].action === 'end-if') {
+      if (depth === 0) return { elseIndex, endIfIndex: i };
+      depth--;
+    } else if (steps[i].action === 'else' && depth === 0) {
+      elseIndex = i;
+    }
+  }
+  return { elseIndex, endIfIndex: steps.length };
+}
+
+// Find matching end-loop for a loop at the given index
+function findMatchingEndLoop(steps: TestStep[], loopIndex: number): number {
+  let depth = 0;
+  for (let i = loopIndex + 1; i < steps.length; i++) {
+    if (steps[i].action === 'loop') depth++;
+    else if (steps[i].action === 'end-loop') {
+      if (depth === 0) return i;
+      depth--;
+    }
+  }
+  return steps.length;
+}
+
 // Main test runner function
-export async function runTest(test: TestDefinition, onProgress?: (run: Partial<TestRun>) => void): Promise<TestRun> {
+export async function runTest(test: TestDefinition, onProgress?: (run: Partial<TestRun>) => void, variables?: Record<string, string>, flowResolver?: FlowResolver): Promise<TestRun> {
   const runId = generateId();
   const startTime = Date.now();
   
@@ -260,26 +356,187 @@ export async function runTest(test: TestDefinition, onProgress?: (run: Partial<T
 
     const page = await context.newPage();
     
-    // Execute each step
+    // Resolve flows if resolver provided
+    const resolver = flowResolver || createFlowResolver();
+    const expandedSteps = resolveFlows(test.steps, resolver);
+
+    // Execute steps with index-based state machine for control flow
     const stepResults: StepResult[] = [];
     let failed = false;
-    
-    for (const step of test.steps) {
+    let i = 0;
+
+    while (i < expandedSteps.length) {
+      const step = expandedSteps[i];
+
       if (failed) {
-        stepResults.push({
-          stepId: step.id,
-          status: 'skipped',
-          durationMs: 0,
-        });
+        stepResults.push({ stepId: step.id, status: 'skipped', durationMs: 0 });
+        i++;
+        run.stepResults = stepResults;
+        onProgress?.(run);
         continue;
       }
-      
-      const result = await executeStep(page, step, test.config);
+
+      // Handle control flow steps
+      if (step.action === 'if') {
+        const condition = (step as any).condition;
+        const conditionResult = condition ? await evaluateCondition(page, condition, variables) : false;
+        const { elseIndex, endIfIndex } = findMatchingElseOrEndIf(expandedSteps, i);
+
+        stepResults.push({ stepId: step.id, status: 'passed', durationMs: 0 });
+        run.stepResults = stepResults;
+        onProgress?.(run);
+
+        if (conditionResult) {
+          // Condition true: execute then-block, skip else-block
+          i++; // Move past 'if', execute normally until else/end-if
+          // We'll skip the else block when we encounter it
+        } else {
+          // Condition false: skip to else or end-if
+          if (elseIndex !== -1) {
+            // Skip to just after else
+            for (let s = i + 1; s <= elseIndex; s++) {
+              stepResults.push({ stepId: expandedSteps[s].id, status: 'skipped', durationMs: 0 });
+            }
+            i = elseIndex + 1;
+          } else {
+            // No else: skip to just after end-if
+            for (let s = i + 1; s <= endIfIndex; s++) {
+              stepResults.push({ stepId: expandedSteps[s].id, status: 'skipped', durationMs: 0 });
+            }
+            i = endIfIndex + 1;
+          }
+          run.stepResults = stepResults;
+          onProgress?.(run);
+        }
+        continue;
+      }
+
+      if (step.action === 'else') {
+        // If we reach 'else' normally, it means the if-condition was true
+        // and we executed the then-block. Skip to end-if.
+        const { endIfIndex } = findMatchingElseOrEndIf(expandedSteps, i - 1); // approximate
+        stepResults.push({ stepId: step.id, status: 'skipped', durationMs: 0 });
+        // Skip everything from else+1 to end-if
+        let depth = 0;
+        let endIdx = expandedSteps.length;
+        for (let s = i + 1; s < expandedSteps.length; s++) {
+          if (expandedSteps[s].action === 'if') depth++;
+          else if (expandedSteps[s].action === 'end-if') {
+            if (depth === 0) { endIdx = s; break; }
+            depth--;
+          }
+          stepResults.push({ stepId: expandedSteps[s].id, status: 'skipped', durationMs: 0 });
+        }
+        if (endIdx < expandedSteps.length) {
+          stepResults.push({ stepId: expandedSteps[endIdx].id, status: 'skipped', durationMs: 0 });
+        }
+        i = endIdx + 1;
+        run.stepResults = stepResults;
+        onProgress?.(run);
+        continue;
+      }
+
+      if (step.action === 'end-if' || step.action === 'end-loop') {
+        stepResults.push({ stepId: step.id, status: 'passed', durationMs: 0 });
+        i++;
+        run.stepResults = stepResults;
+        onProgress?.(run);
+        continue;
+      }
+
+      if (step.action === 'loop') {
+        const condition = (step as any).condition;
+        const maxIterations = (step as any).maxIterations || 10;
+        const endLoopIndex = findMatchingEndLoop(expandedSteps, i);
+        const loopBody = expandedSteps.slice(i + 1, endLoopIndex);
+
+        stepResults.push({ stepId: step.id, status: 'passed', durationMs: 0 });
+        run.stepResults = stepResults;
+        onProgress?.(run);
+
+        let iteration = 0;
+        while (iteration < maxIterations) {
+          const conditionResult = condition ? await evaluateCondition(page, condition, variables) : false;
+          if (!conditionResult) break;
+
+          for (const bodyStep of loopBody) {
+            if (failed) {
+              stepResults.push({ stepId: bodyStep.id, status: 'skipped', durationMs: 0 });
+              continue;
+            }
+            const resolvedStep = variables ? substituteStepVariables(bodyStep, variables) : bodyStep;
+            const result = await executeStep(page, resolvedStep, test.config);
+            stepResults.push(result);
+
+            if (result.status === 'failed') {
+              failed = true;
+              const screenshotDir = join(DATA_DIR, 'screenshots');
+              ensureDir(screenshotDir);
+              const screenshotPath = join(screenshotDir, `failure-${runId}.png`);
+              await page.screenshot({ path: screenshotPath, fullPage: true });
+              run.screenshotPath = screenshotPath;
+              run.error = result.error;
+            }
+            run.stepResults = stepResults;
+            onProgress?.(run);
+          }
+
+          if (failed) break;
+          iteration++;
+        }
+
+        // Record end-loop
+        if (endLoopIndex < expandedSteps.length) {
+          stepResults.push({ stepId: expandedSteps[endLoopIndex].id, status: 'passed', durationMs: 0 });
+        }
+        i = endLoopIndex + 1;
+        run.stepResults = stepResults;
+        onProgress?.(run);
+        continue;
+      }
+
+      // Regular step execution
+      const resolvedStep = variables ? substituteStepVariables(step, variables) : step;
+      const result = await executeStep(page, resolvedStep, test.config);
       stepResults.push(result);
-      
+
+      // Visual regression: compare screenshot against baseline
+      if (result.status === 'passed' && step.action === 'screenshot' && result.screenshotPath) {
+        try {
+          const baseline = db.select().from(baselines)
+            .where(eq(baselines.testId, test.id))
+            .all()
+            .find((b) => b.stepId === step.id);
+
+          if (baseline) {
+            const diffDir = join(DATA_DIR, 'diffs');
+            ensureDir(diffDir);
+            const diffResult = compareScreenshots(baseline.screenshotPath, result.screenshotPath, diffDir);
+            const now = new Date().toISOString();
+
+            await db.insert(screenshotDiffs).values({
+              id: generateId(),
+              runId,
+              stepId: step.id,
+              baselineId: baseline.id,
+              baselinePath: baseline.screenshotPath,
+              actualPath: result.screenshotPath,
+              diffPath: diffResult.diffImagePath,
+              diffPercentage: Math.round(diffResult.diffPercentage * 100),
+              status: diffResult.matches ? 'match' : 'mismatch',
+              threshold: 500,
+              createdAt: now,
+            });
+          }
+        } catch (diffErr) {
+          console.error('Visual diff error:', diffErr);
+          // Don't fail the step if visual diff fails
+        }
+      }
+
       if (result.status === 'failed') {
         failed = true;
-        
+
         // Take screenshot on failure
         const screenshotDir = join(DATA_DIR, 'screenshots');
         ensureDir(screenshotDir);
@@ -288,10 +545,11 @@ export async function runTest(test: TestDefinition, onProgress?: (run: Partial<T
         run.screenshotPath = screenshotPath;
         run.error = result.error;
       }
-      
+
       // Update progress
       run.stepResults = stepResults;
       onProgress?.(run);
+      i++;
     }
     
     // Finalize run

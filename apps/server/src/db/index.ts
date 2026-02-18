@@ -55,4 +55,69 @@ sqlite.exec(`
   );
 `);
 
+// Migrations for new columns/tables
+try { sqlite.exec('ALTER TABLE projects ADD COLUMN variables TEXT'); } catch {}
+
+sqlite.exec(`
+  CREATE TABLE IF NOT EXISTS suites (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    test_ids TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS suite_runs (
+    id TEXT PRIMARY KEY,
+    suite_id TEXT,
+    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    status TEXT NOT NULL,
+    total_tests INTEGER NOT NULL,
+    passed_tests INTEGER NOT NULL DEFAULT 0,
+    failed_tests INTEGER NOT NULL DEFAULT 0,
+    run_ids TEXT,
+    duration_ms INTEGER,
+    created_at TEXT NOT NULL,
+    completed_at TEXT
+  );
+`);
+
+sqlite.exec(`
+  CREATE TABLE IF NOT EXISTS baselines (
+    id TEXT PRIMARY KEY,
+    test_id TEXT NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
+    step_id TEXT NOT NULL,
+    screenshot_path TEXT NOT NULL,
+    run_id TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS screenshot_diffs (
+    id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+    step_id TEXT NOT NULL,
+    baseline_id TEXT REFERENCES baselines(id),
+    baseline_path TEXT NOT NULL,
+    actual_path TEXT NOT NULL,
+    diff_path TEXT,
+    diff_percentage INTEGER,
+    status TEXT NOT NULL,
+    threshold INTEGER,
+    created_at TEXT NOT NULL
+  );
+`);
+
+sqlite.exec(`
+  CREATE TABLE IF NOT EXISTS flows (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    steps TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+`);
+
 console.log('✅ Database initialized');

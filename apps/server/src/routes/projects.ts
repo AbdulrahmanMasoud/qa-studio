@@ -15,6 +15,7 @@ const updateProjectSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   baseUrl: z.string().url().optional().nullable(),
   description: z.string().max(500).optional().nullable(),
+  variables: z.record(z.string()).optional(),
 });
 
 export async function projectRoutes(app: FastifyInstance) {

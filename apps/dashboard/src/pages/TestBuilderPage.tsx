@@ -28,8 +28,10 @@ import {
   History,
   Video,
   StopCircle,
+  Eye,
 } from 'lucide-react';
 import { testsApi, recorderApi } from '../lib/api';
+import BaselineManager from '../components/BaselineManager';
 import {
   TestStep,
   StepResult,
@@ -65,6 +67,9 @@ export default function TestBuilderPage() {
   // Live run progress state
   const [liveStepResults, setLiveStepResults] = useState<Map<string, StepResult>>(new Map());
   const [runningStepIndex, setRunningStepIndex] = useState<number>(-1);
+
+  // Baseline manager state
+  const [showBaselineManager, setShowBaselineManager] = useState(false);
 
   // Recorder state
   const [isRecorderOpen, setIsRecorderOpen] = useState(false);
@@ -347,6 +352,22 @@ export default function TestBuilderPage() {
   const selectedStep = steps.find((s) => s.id === selectedStepId);
   const activeStep = steps.find((s) => s.id === activeId);
 
+  // Compute nesting depths for control flow visual indentation
+  const nestingDepths = (() => {
+    const depths: number[] = [];
+    let depth = 0;
+    for (const step of steps) {
+      if (step.action === 'else' || step.action === 'end-if' || step.action === 'end-loop') {
+        depth = Math.max(0, depth - 1);
+      }
+      depths.push(depth);
+      if (step.action === 'if' || step.action === 'loop' || step.action === 'else') {
+        depth++;
+      }
+    }
+    return depths;
+  })();
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -454,6 +475,13 @@ export default function TestBuilderPage() {
               )}
             </button>
             <button
+              onClick={() => setShowBaselineManager(true)}
+              className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <Eye className="h-4 w-4" />
+              Visual
+            </button>
+            <button
               onClick={handleToggleRunHistory}
               className={clsx(
                 'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
@@ -488,6 +516,11 @@ export default function TestBuilderPage() {
           </div>
         </div>
       </header>
+
+      {/* Baseline manager modal */}
+      {showBaselineManager && testId && (
+        <BaselineManager testId={testId} onClose={() => setShowBaselineManager(false)} />
+      )}
 
       {/* Recorder bar */}
       {(isRecorderOpen || isRecording) && (
@@ -538,6 +571,7 @@ export default function TestBuilderPage() {
                       onDelete={() => handleDeleteStep(step.id)}
                       runStatus={getStepRunStatus(step, index)}
                       durationMs={getStepDuration(step.id)}
+                      nestingDepth={nestingDepths[index] || 0}
                     />
                   ))}
                 </div>
@@ -559,6 +593,7 @@ export default function TestBuilderPage() {
             step={selectedStep}
             onUpdate={(updates) => handleUpdateStep(selectedStep.id, updates)}
             onClose={() => setSelectedStepId(null)}
+            projectId={test?.projectId}
           />
         )}
         {showRunDetail && (

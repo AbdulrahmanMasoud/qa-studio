@@ -17,7 +17,13 @@ export type ActionType =
   | 'press'
   | 'wait'
   | 'screenshot'
-  | 'assert';
+  | 'assert'
+  | 'use-flow'
+  | 'if'
+  | 'else'
+  | 'end-if'
+  | 'loop'
+  | 'end-loop';
 
 export interface BaseStep {
   id: string;
@@ -87,6 +93,50 @@ export interface AssertStep extends BaseStep {
   value?: string;
 }
 
+export interface UseFlowStep extends BaseStep {
+  action: 'use-flow';
+  flowId: string;
+  flowName?: string;
+}
+
+export type ConditionType =
+  | 'element-exists'
+  | 'element-not-exists'
+  | 'variable-equals'
+  | 'variable-contains'
+  | 'url-matches'
+  | 'url-contains';
+
+export interface StepCondition {
+  type: ConditionType;
+  selector?: string;
+  variable?: string;
+  value?: string;
+}
+
+export interface IfStep extends BaseStep {
+  action: 'if';
+  condition: StepCondition;
+}
+
+export interface ElseStep extends BaseStep {
+  action: 'else';
+}
+
+export interface EndIfStep extends BaseStep {
+  action: 'end-if';
+}
+
+export interface LoopStep extends BaseStep {
+  action: 'loop';
+  condition: StepCondition;
+  maxIterations: number;
+}
+
+export interface EndLoopStep extends BaseStep {
+  action: 'end-loop';
+}
+
 export type TestStep =
   | GotoStep
   | ClickStep
@@ -98,7 +148,13 @@ export type TestStep =
   | PressStep
   | WaitStep
   | ScreenshotStep
-  | AssertStep;
+  | AssertStep
+  | UseFlowStep
+  | IfStep
+  | ElseStep
+  | EndIfStep
+  | LoopStep
+  | EndLoopStep;
 
 // --------------------------------------------
 // Test Configuration
@@ -147,6 +203,7 @@ export interface Project {
   name: string;
   baseUrl?: string;
   description?: string;
+  variables?: Record<string, string>;
   createdAt: string;
   updatedAt: string;
 }
@@ -193,6 +250,7 @@ export interface UpdateProjectRequest {
   name?: string;
   baseUrl?: string;
   description?: string;
+  variables?: Record<string, string>;
 }
 
 export interface CreateTestRequest {
@@ -213,6 +271,97 @@ export interface UpdateTestRequest {
 export interface RunTestRequest {
   testId: string;
   config?: Partial<TestConfig>;
+}
+
+// --------------------------------------------
+// Test Suites
+// --------------------------------------------
+
+export interface Suite {
+  id: string;
+  projectId: string;
+  name: string;
+  testIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SuiteConfig {
+  concurrency: number;
+}
+
+export interface SuiteRun {
+  id: string;
+  suiteId?: string;
+  projectId: string;
+  status: RunStatus;
+  totalTests: number;
+  passedTests: number;
+  failedTests: number;
+  runIds: string[];
+  durationMs?: number;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface CreateSuiteRequest {
+  projectId: string;
+  name: string;
+  testIds: string[];
+}
+
+// --------------------------------------------
+// Flows (Reusable Step Groups)
+// --------------------------------------------
+
+export interface Flow {
+  id: string;
+  projectId: string;
+  name: string;
+  description?: string;
+  steps: TestStep[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateFlowRequest {
+  projectId: string;
+  name: string;
+  description?: string;
+  steps?: TestStep[];
+}
+
+export interface UpdateFlowRequest {
+  name?: string;
+  description?: string;
+  steps?: TestStep[];
+}
+
+// --------------------------------------------
+// Visual Regression
+// --------------------------------------------
+
+export interface Baseline {
+  id: string;
+  testId: string;
+  stepId: string;
+  screenshotPath: string;
+  runId: string;
+  createdAt: string;
+}
+
+export interface ScreenshotDiff {
+  id: string;
+  runId: string;
+  stepId: string;
+  baselineId?: string;
+  baselinePath: string;
+  actualPath: string;
+  diffPath?: string;
+  diffPercentage?: number;
+  status: 'match' | 'mismatch' | 'new' | 'approved' | 'rejected';
+  threshold?: number;
+  createdAt: string;
 }
 
 // --------------------------------------------
@@ -465,6 +614,50 @@ export const actionsMeta: ActionMeta[] = [
       { name: 'value', label: 'Expected Value', type: 'text', required: false, placeholder: 'Expected text or value' },
     ],
   },
+  {
+    type: 'use-flow',
+    label: 'Use Flow',
+    icon: '🔗',
+    description: 'Run a reusable flow',
+    fields: [
+      { name: 'flowId', label: 'Flow', type: 'text', required: true, placeholder: 'Select a flow' },
+    ],
+  },
+  {
+    type: 'if',
+    label: 'If',
+    icon: '🔀',
+    description: 'Conditional branch — execute steps if condition is true',
+    fields: [],
+  },
+  {
+    type: 'else',
+    label: 'Else',
+    icon: '↩️',
+    description: 'Else branch — execute if the If condition was false',
+    fields: [],
+  },
+  {
+    type: 'end-if',
+    label: 'End If',
+    icon: '🔚',
+    description: 'Marks the end of an If/Else block',
+    fields: [],
+  },
+  {
+    type: 'loop',
+    label: 'Loop',
+    icon: '🔄',
+    description: 'Repeat steps while condition is true',
+    fields: [],
+  },
+  {
+    type: 'end-loop',
+    label: 'End Loop',
+    icon: '🔚',
+    description: 'Marks the end of a Loop block',
+    fields: [],
+  },
 ];
 
 // --------------------------------------------
@@ -501,6 +694,18 @@ export function createEmptyStep(action: ActionType): TestStep {
       return { id, action, name: '', fullPage: false };
     case 'assert':
       return { id, action, assertType: 'visible', selector: '', condition: 'contains', value: '' };
+    case 'use-flow':
+      return { id, action, flowId: '', flowName: '' };
+    case 'if':
+      return { id, action, condition: { type: 'element-exists', selector: '' } };
+    case 'else':
+      return { id, action: 'else' };
+    case 'end-if':
+      return { id, action: 'end-if' };
+    case 'loop':
+      return { id, action, condition: { type: 'element-exists', selector: '' }, maxIterations: 10 };
+    case 'end-loop':
+      return { id, action: 'end-loop' };
     default:
       throw new Error(`Unknown action type: ${action}`);
   }

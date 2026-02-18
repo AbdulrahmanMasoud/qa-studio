@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -10,8 +10,15 @@ import {
   Clock,
   ArrowLeft,
   FileCode,
+  Copy,
+  Settings,
+  PlayCircle,
+  BarChart3,
+  Workflow,
 } from 'lucide-react';
-import { projectsApi, testsApi } from '../lib/api';
+import { projectsApi, testsApi, suiteRunsApi, analyticsApi } from '../lib/api';
+import EnvironmentVariablesModal from '../components/EnvironmentVariablesModal';
+import BatchRunProgress, { BatchTestStatus } from '../components/BatchRunProgress';
 import clsx from 'clsx';
 
 export default function TestsPage() {
@@ -20,6 +27,11 @@ export default function TestsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [newTestName, setNewTestName] = useState('');
   const [runningTest, setRunningTest] = useState<string | null>(null);
+  const [showVariables, setShowVariables] = useState(false);
+  const [batchRunning, setBatchRunning] = useState(false);
+  const [batchStatuses, setBatchStatuses] = useState<BatchTestStatus[]>([]);
+  const [showBatchProgress, setShowBatchProgress] = useState(false);
+  const [concurrency, setConcurrency] = useState(1);
 
   const { data: project } = useQuery({
     queryKey: ['projects', projectId],
@@ -33,6 +45,12 @@ export default function TestsPage() {
     enabled: !!projectId,
   });
 
+  const { data: summary } = useQuery({
+    queryKey: ['analytics', 'summary', projectId],
+    queryFn: () => analyticsApi.summary(projectId!),
+    enabled: !!projectId,
+  });
+
   const createMutation = useMutation({
     mutationFn: testsApi.create,
     onSuccess: () => {
@@ -42,10 +60,26 @@ export default function TestsPage() {
     },
   });
 
+  const cloneMutation = useMutation({
+    mutationFn: testsApi.clone,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tests', projectId] });
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: testsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tests', projectId] });
+    },
+  });
+
+  const variablesMutation = useMutation({
+    mutationFn: (variables: Record<string, string>) =>
+      projectsApi.update(projectId!, { variables }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId] });
+      setShowVariables(false);
     },
   });
 
@@ -79,6 +113,46 @@ export default function TestsPage() {
     runMutation.mutate(testId);
   };
 
+  const handleRunAll = useCallback(async () => {
+    if (!projectId || !tests || tests.length === 0) return;
+
+    setBatchRunning(true);
+    setShowBatchProgress(true);
+    setBatchStatuses(
+      tests.map((t) => ({ testId: t.id, testName: t.name, status: 'pending' as const }))
+    );
+
+    try {
+      await suiteRunsApi.runAll(projectId, concurrency, (event) => {
+        if (event.type === 'test-start') {
+          setBatchStatuses((prev) =>
+            prev.map((s) =>
+              s.testId === event.testId ? { ...s, status: 'running' } : s
+            )
+          );
+        } else if (event.type === 'test-complete') {
+          setBatchStatuses((prev) =>
+            prev.map((s) =>
+              s.testId === event.testId
+                ? {
+                    ...s,
+                    status: event.status,
+                    durationMs: event.durationMs,
+                    error: event.error,
+                  }
+                : s
+            )
+          );
+        }
+      });
+    } catch (error) {
+      console.error('Batch run failed:', error);
+    } finally {
+      setBatchRunning(false);
+      queryClient.invalidateQueries({ queryKey: ['tests', projectId] });
+    }
+  }, [projectId, tests, concurrency, queryClient]);
+
   return (
     <div className="p-8">
       {/* Header */}
@@ -97,15 +171,113 @@ export default function TestsPage() {
               {tests?.length || 0} test{tests?.length !== 1 ? 's' : ''}
             </p>
           </div>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            <Plus className="h-5 w-5" />
-            New Test
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              to={`/projects/${projectId}/dashboard`}
+              className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <BarChart3 className="h-4 w-4" />
+              Dashboard
+            </Link>
+            <button
+              onClick={() => setShowVariables(true)}
+              className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <Settings className="h-4 w-4" />
+              Variables
+            </button>
+            <Link
+              to={`/projects/${projectId}/flows`}
+              className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <Workflow className="h-4 w-4" />
+              Flows
+            </Link>
+            <div className="flex items-center gap-2">
+              <select
+                value={concurrency}
+                onChange={(e) => setConcurrency(Number(e.target.value))}
+                className="px-2 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                title="Parallel tests"
+              >
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>{n}x</option>
+                ))}
+              </select>
+              <button
+                onClick={handleRunAll}
+                disabled={batchRunning || !tests || tests.length === 0}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+              >
+                <PlayCircle className="h-4 w-4" />
+                Run All
+              </button>
+            </div>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <Plus className="h-5 w-5" />
+              New Test
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Variables modal */}
+      {showVariables && (
+        <EnvironmentVariablesModal
+          variables={(project as any)?.variables || {}}
+          onSave={(vars) => variablesMutation.mutate(vars)}
+          onClose={() => setShowVariables(false)}
+          isSaving={variablesMutation.isPending}
+        />
+      )}
+
+      {/* Summary cards */}
+      {summary && (
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <FileCode className="h-4 w-4 text-indigo-500" />
+              <span className="text-xs text-gray-500">Total Tests</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{summary.totalTests}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span className="text-xs text-gray-500">Pass Rate</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{summary.passRate}%</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Play className="h-4 w-4 text-blue-500" />
+              <span className="text-xs text-gray-500">Total Runs</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{summary.totalRuns}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="h-4 w-4 text-yellow-500" />
+              <span className="text-xs text-gray-500">Avg Duration</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">
+              {summary.avgDuration ? `${(summary.avgDuration / 1000).toFixed(1)}s` : '—'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Batch run progress */}
+      {showBatchProgress && batchStatuses.length > 0 && (
+        <BatchRunProgress
+          testStatuses={batchStatuses}
+          isRunning={batchRunning}
+          onClose={() => setShowBatchProgress(false)}
+        />
+      )}
 
       {/* Create modal */}
       {showCreate && (
@@ -201,6 +373,14 @@ export default function TestsPage() {
                   >
                     <Play className="h-4 w-4" />
                     {runningTest === test.id ? 'Running...' : 'Run'}
+                  </button>
+                  <button
+                    onClick={() => cloneMutation.mutate(test.id)}
+                    disabled={cloneMutation.isPending}
+                    className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                    title="Clone test"
+                  >
+                    <Copy className="h-4 w-4" />
                   </button>
                   <Link
                     to={`/tests/${test.id}`}
