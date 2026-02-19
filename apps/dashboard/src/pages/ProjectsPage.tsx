@@ -3,13 +3,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Plus, FolderOpen, Trash2, ExternalLink } from 'lucide-react';
 import { projectsApi } from '../lib/api';
+import { useToast } from '../components/Toast';
+import ConfirmDialog from '../components/ConfirmDialog';
 import type { Project } from '@qa-studio/shared';
 
 export default function ProjectsPage() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [showCreate, setShowCreate] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectUrl, setNewProjectUrl] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ['projects'],
@@ -23,14 +27,19 @@ export default function ProjectsPage() {
       setShowCreate(false);
       setNewProjectName('');
       setNewProjectUrl('');
+      toast.success('Project created');
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to create project'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: projectsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setConfirmDelete(null);
+      toast.success('Project deleted');
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to delete project'),
   });
 
   const handleCreate = (e: React.FormEvent) => {
@@ -43,9 +52,7 @@ export default function ProjectsPage() {
   };
 
   const handleDelete = (project: Project) => {
-    if (confirm(`Delete project "${project.name}"? This will delete all tests.`)) {
-      deleteMutation.mutate(project.id);
-    }
+    setConfirmDelete({ id: project.id, name: project.name });
   };
 
   return (
@@ -119,14 +126,38 @@ export default function ProjectsPage() {
         </div>
       )}
 
+      {/* Confirm delete modal */}
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Delete Project"
+          message={`Delete "${confirmDelete.name}"? This will permanently delete all tests, runs, and data associated with this project.`}
+          confirmLabel="Delete"
+          variant="danger"
+          isLoading={deleteMutation.isPending}
+          onConfirm={() => deleteMutation.mutate(confirmDelete.id)}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
+
       {/* Projects grid */}
       {isLoading ? (
         <div className="text-center py-12 text-gray-500">Loading projects...</div>
       ) : projects?.length === 0 ? (
-        <div className="text-center py-12">
-          <FolderOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+        <div className="text-center py-16">
+          <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <FolderOpen className="h-8 w-8 text-indigo-600" />
+          </div>
           <h3 className="text-lg font-medium text-gray-900">No projects yet</h3>
-          <p className="text-gray-500 mt-1">Create your first project to start testing</p>
+          <p className="text-gray-500 mt-1 max-w-sm mx-auto">
+            Projects organize your tests by application. Create your first project to start building automated tests.
+          </p>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Create Your First Project
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

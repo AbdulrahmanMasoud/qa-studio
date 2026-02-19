@@ -24,10 +24,11 @@ export default function BaselineManager({ testId, onClose }: BaselineManagerProp
     queryFn: () => visualRegressionApi.getBaselines(testId),
   });
 
-  const { data: runs } = useQuery({
+  const { data: runsResponse } = useQuery({
     queryKey: ['runs', testId],
-    queryFn: () => testsApi.getRuns(testId),
+    queryFn: () => testsApi.getRuns(testId, 50),
   });
+  const runs = runsResponse?.data;
 
   const setFromRunMutation = useMutation({
     mutationFn: (runId: string) => visualRegressionApi.setBaselinesFromRun(testId, runId),

@@ -114,6 +114,23 @@ export const flows = sqliteTable('flows', {
   updatedAt: text('updated_at').notNull(),
 });
 
+// Schedules (cron-based test execution)
+export const schedules = sqliteTable('schedules', {
+  id: text('id').primaryKey(),
+  projectId: text('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  suiteId: text('suite_id'),
+  name: text('name').notNull(),
+  cronExpression: text('cron_expression').notNull(),
+  enabled: integer('enabled').notNull().default(1),
+  lastRunAt: text('last_run_at'),
+  nextRunAt: text('next_run_at'),
+  lastRunStatus: text('last_run_status'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
 // Types for insert/select
 export type InsertProject = typeof projects.$inferInsert;
 export type SelectProject = typeof projects.$inferSelect;
@@ -138,3 +155,6 @@ export type SelectBaseline = typeof baselines.$inferSelect;
 
 export type InsertScreenshotDiff = typeof screenshotDiffs.$inferInsert;
 export type SelectScreenshotDiff = typeof screenshotDiffs.$inferSelect;
+
+export type InsertSchedule = typeof schedules.$inferInsert;
+export type SelectSchedule = typeof schedules.$inferSelect;

@@ -16,6 +16,9 @@ import type {
   UpdateFlowRequest,
   Baseline,
   ScreenshotDiff,
+  Schedule,
+  CreateScheduleRequest,
+  UpdateScheduleRequest,
 } from '@qa-studio/shared';
 
 const API_BASE = '/api';
@@ -66,6 +69,14 @@ export const projectsApi = {
     fetchApi<{ success: boolean }>(`/projects/${id}`, {
       method: 'DELETE',
     }),
+
+  exportProject: (id: string) => fetchApi<any>(`/projects/${id}/export`),
+
+  importData: (id: string, data: any) =>
+    fetchApi<{ success: boolean; importedTests: number; importedFlows: number }>(
+      `/projects/${id}/import`,
+      { method: 'POST', body: JSON.stringify(data) }
+    ),
 };
 
 // Tests
@@ -78,6 +89,9 @@ export interface TestFromApi {
   steps: TestStep[];
   createdAt: string;
   updatedAt: string;
+  lastRunStatus?: string | null;
+  lastRunDurationMs?: number | null;
+  lastRunAt?: string | null;
 }
 
 export const testsApi = {
@@ -159,7 +173,12 @@ export const testsApi = {
     return finalRun;
   },
   
-  getRuns: (testId: string) => fetchApi<TestRun[]>(`/tests/${testId}/runs`),
+  getRuns: (testId: string, limit = 20, offset = 0) =>
+    fetchApi<{ data: TestRun[]; total: number; limit: number; offset: number }>(
+      `/tests/${testId}/runs?limit=${limit}&offset=${offset}`
+    ),
+
+  exportTest: (id: string) => fetchApi<any>(`/tests/${id}/export`),
 };
 
 // Runs
@@ -343,4 +362,19 @@ export const recorderApi = {
       method: 'POST',
       body: JSON.stringify({ sessionId }),
     }),
+};
+
+// Schedules
+export const schedulesApi = {
+  listByProject: (projectId: string) =>
+    fetchApi<Schedule[]>(`/projects/${projectId}/schedules`),
+
+  create: (data: CreateScheduleRequest) =>
+    fetchApi<Schedule>('/schedules', { method: 'POST', body: JSON.stringify(data) }),
+
+  update: (id: string, data: UpdateScheduleRequest) =>
+    fetchApi<Schedule>(`/schedules/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  delete: (id: string) =>
+    fetchApi<{ success: boolean }>(`/schedules/${id}`, { method: 'DELETE' }),
 };

@@ -170,6 +170,9 @@ export async function startRecording(testId: string, startUrl: string): Promise<
       '--disable-blink-features=AutomationControlled',
       '--no-first-run',
       '--no-default-browser-check',
+      '--deny-permission-prompts',
+      '--disable-features=Translate',
+      '--disable-notifications',
     ],
   });
 

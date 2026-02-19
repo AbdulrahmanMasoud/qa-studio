@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../db/index.js';
 import { suites, suiteRuns, tests, projects } from '../db/schema.js';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 import { generateId, TestStep, TestConfig, TestDefinition } from '@qa-studio/shared';
 import { runBatch } from '../services/batch-runner.js';
 
@@ -273,10 +273,17 @@ export async function suiteRoutes(app: FastifyInstance) {
     return reply;
   });
 
-  // List suite runs for a project
-  app.get<{ Params: { projectId: string } }>('/api/projects/:projectId/suite-runs', async (request) => {
+  // List suite runs for a project (paginated)
+  app.get<{ Params: { projectId: string }; Querystring: { limit?: string; offset?: string } }>('/api/projects/:projectId/suite-runs', async (request) => {
     const { projectId } = request.params;
-    return db.select().from(suiteRuns).where(eq(suiteRuns.projectId, projectId)).orderBy(desc(suiteRuns.createdAt));
+    const limit = Math.min(Math.max(parseInt(request.query.limit || '20') || 20, 1), 100);
+    const offset = Math.max(parseInt(request.query.offset || '0') || 0, 0);
+
+    const totalResult = db.select({ count: sql<number>`count(*)` }).from(suiteRuns).where(eq(suiteRuns.projectId, projectId)).get();
+    const total = totalResult?.count ?? 0;
+
+    const data = await db.select().from(suiteRuns).where(eq(suiteRuns.projectId, projectId)).orderBy(desc(suiteRuns.createdAt)).limit(limit).offset(offset);
+    return { data, total, limit, offset };
   });
 
   // Get single suite run

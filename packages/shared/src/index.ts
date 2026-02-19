@@ -169,6 +169,8 @@ export interface TestConfig {
   timeout: number;
   headless: boolean;
   useRealChrome?: boolean;
+  permissions?: string[];
+  geolocation?: { latitude: number; longitude: number };
 }
 
 export const defaultTestConfig: TestConfig = {
@@ -659,6 +661,77 @@ export const actionsMeta: ActionMeta[] = [
     fields: [],
   },
 ];
+
+// --------------------------------------------
+// Schedules
+// --------------------------------------------
+
+export interface Schedule {
+  id: string;
+  projectId: string;
+  suiteId?: string;
+  name: string;
+  cronExpression: string;
+  enabled: boolean;
+  lastRunAt?: string;
+  nextRunAt?: string;
+  lastRunStatus?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateScheduleRequest {
+  projectId: string;
+  suiteId?: string;
+  name: string;
+  cronExpression: string;
+  enabled?: boolean;
+}
+
+export interface UpdateScheduleRequest {
+  name?: string;
+  cronExpression?: string;
+  enabled?: boolean;
+  suiteId?: string;
+}
+
+// --------------------------------------------
+// Export/Import
+// --------------------------------------------
+
+export interface TestExport {
+  version: number;
+  type: 'test';
+  exportedAt: string;
+  test: {
+    name: string;
+    description?: string | null;
+    config: TestConfig;
+    steps: TestStep[];
+  };
+}
+
+export interface ProjectExport {
+  version: number;
+  type: 'project';
+  exportedAt: string;
+  project: {
+    name: string;
+    baseUrl?: string | null;
+    variables?: Record<string, string>;
+  };
+  tests: {
+    name: string;
+    description?: string | null;
+    config: TestConfig;
+    steps: TestStep[];
+  }[];
+  flows: {
+    name: string;
+    description?: string | null;
+    steps: TestStep[];
+  }[];
+}
 
 // --------------------------------------------
 // Utility Functions

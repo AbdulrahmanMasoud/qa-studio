@@ -20,6 +20,7 @@ import {
 } from '@dnd-kit/sortable';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { flowsApi } from '../lib/api';
+import { useToast } from '../components/Toast';
 import { TestStep, ActionType, createEmptyStep } from '@qa-studio/shared';
 import SortableStep from '../components/SortableStep';
 import ActionPalette from '../components/ActionPalette';
@@ -28,6 +29,7 @@ import StepEditor from '../components/StepEditor';
 export default function FlowEditorPage() {
   const { flowId } = useParams<{ flowId: string }>();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const [steps, setSteps] = useState<TestStep[]>([]);
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
@@ -57,7 +59,9 @@ export default function FlowEditorPage() {
     onSuccess: () => {
       setHasChanges(false);
       queryClient.invalidateQueries({ queryKey: ['flow', flowId] });
+      toast.success('Flow saved');
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to save flow'),
   });
 
   const handleDragStart = (event: DragStartEvent) => {

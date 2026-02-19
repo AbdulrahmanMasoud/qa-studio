@@ -16,6 +16,9 @@ import { suiteRoutes } from './routes/suites.js';
 import { analyticsRoutes } from './routes/analytics.js';
 import { flowRoutes } from './routes/flows.js';
 import { visualRegressionRoutes } from './routes/visual-regression.js';
+import { scheduleRoutes } from './routes/schedules.js';
+import { startCleanupSchedule } from './services/cleanup.js';
+import { loadAllSchedules } from './services/scheduler.js';
 
 const app = Fastify({
   logger: true,
@@ -50,6 +53,7 @@ await app.register(suiteRoutes);
 await app.register(analyticsRoutes);
 await app.register(flowRoutes);
 await app.register(visualRegressionRoutes);
+await app.register(scheduleRoutes);
 
 // Health check
 app.get('/api/health', async () => {
@@ -61,6 +65,11 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 
 try {
   await app.listen({ port: PORT, host: '0.0.0.0' });
+
+  // Start background services
+  startCleanupSchedule();
+  loadAllSchedules();
+
   console.log(`
   ╔═══════════════════════════════════════════════════╗
   ║                                                   ║

@@ -3,12 +3,16 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, ArrowLeft, Loader2, Workflow } from 'lucide-react';
 import { projectsApi, flowsApi } from '../lib/api';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { useToast } from '../components/Toast';
 
 export default function FlowsPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [showCreate, setShowCreate] = useState(false);
   const [newFlowName, setNewFlowName] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
 
   const { data: project } = useQuery({
     queryKey: ['projects', projectId],
@@ -28,14 +32,19 @@ export default function FlowsPage() {
       queryClient.invalidateQueries({ queryKey: ['flows', projectId] });
       setShowCreate(false);
       setNewFlowName('');
+      toast.success('Flow created');
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to create flow'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: flowsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['flows', projectId] });
+      setConfirmDelete(null);
+      toast.success('Flow deleted');
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to delete flow'),
   });
 
   const handleCreate = (e: React.FormEvent) => {
@@ -108,15 +117,39 @@ export default function FlowsPage() {
         </div>
       )}
 
+      {/* Confirm delete modal */}
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Delete Flow"
+          message={`Delete "${confirmDelete.name}"? Tests using this flow will need to be updated.`}
+          confirmLabel="Delete"
+          variant="danger"
+          isLoading={deleteMutation.isPending}
+          onConfirm={() => deleteMutation.mutate(confirmDelete.id)}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
+
       {isLoading ? (
         <div className="text-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mx-auto" />
         </div>
       ) : flows?.length === 0 ? (
-        <div className="text-center py-12">
-          <Workflow className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+        <div className="text-center py-16">
+          <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Workflow className="h-8 w-8 text-purple-600" />
+          </div>
           <h3 className="text-lg font-medium text-gray-900">No flows yet</h3>
-          <p className="text-gray-500 mt-1">Create reusable step groups to use across tests</p>
+          <p className="text-gray-500 mt-1 max-w-md mx-auto">
+            Flows are reusable step sequences you can include in multiple tests. Create a login flow once, use it everywhere.
+          </p>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Create Your First Flow
+          </button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -150,9 +183,7 @@ export default function FlowsPage() {
                     Edit
                   </Link>
                   <button
-                    onClick={() => {
-                      if (confirm(`Delete flow "${flow.name}"?`)) deleteMutation.mutate(flow.id);
-                    }}
+                    onClick={() => setConfirmDelete({ id: flow.id, name: flow.name })}
                     className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />

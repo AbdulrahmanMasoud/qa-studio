@@ -120,4 +120,20 @@ sqlite.exec(`
   );
 `);
 
+sqlite.exec(`
+  CREATE TABLE IF NOT EXISTS schedules (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    suite_id TEXT,
+    name TEXT NOT NULL,
+    cron_expression TEXT NOT NULL,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    last_run_at TEXT,
+    next_run_at TEXT,
+    last_run_status TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+`);
+
 console.log('✅ Database initialized');

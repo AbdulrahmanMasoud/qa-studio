@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Check, XCircle, ZoomIn, Columns3, ArrowLeftRight } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { visualRegressionApi } from '../lib/api';
+import { useToast } from './Toast';
 import type { ScreenshotDiff } from '@qa-studio/shared';
 import clsx from 'clsx';
 
@@ -20,6 +21,7 @@ interface VisualDiffViewerProps {
 
 export default function VisualDiffViewer({ diff, onClose }: VisualDiffViewerProps) {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('side-by-side');
   const [sliderPos, setSliderPos] = useState(50);
@@ -28,16 +30,20 @@ export default function VisualDiffViewer({ diff, onClose }: VisualDiffViewerProp
     mutationFn: () => visualRegressionApi.approveDiff(diff.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diffs'] });
+      toast.success('Diff approved');
       onClose();
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to approve diff'),
   });
 
   const rejectMutation = useMutation({
     mutationFn: () => visualRegressionApi.rejectDiff(diff.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diffs'] });
+      toast.success('Diff rejected');
       onClose();
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to reject diff'),
   });
 
   const diffPercent = diff.diffPercentage != null ? (diff.diffPercentage / 100).toFixed(2) : '—';

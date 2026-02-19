@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../db/index.js';
 import { tests, projects, runs } from '../db/schema.js';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 import { generateId, defaultTestConfig, TestStep, TestConfig } from '@qa-studio/shared';
 import { runTest, createFlowResolver } from '../services/runner.js';
 
@@ -70,7 +70,28 @@ export async function testRoutes(app: FastifyInstance) {
     }
     
     const allTests = await db.select().from(tests).where(eq(tests.projectId, projectId)).orderBy(tests.createdAt);
-    return allTests;
+
+    // Enrich each test with last run data
+    const enriched = allTests.map((test) => {
+      const lastRun = db.select({
+        status: runs.status,
+        durationMs: runs.durationMs,
+        createdAt: runs.createdAt,
+      }).from(runs)
+        .where(eq(runs.testId, test.id))
+        .orderBy(desc(runs.createdAt))
+        .limit(1)
+        .get();
+
+      return {
+        ...test,
+        lastRunStatus: lastRun?.status ?? null,
+        lastRunDurationMs: lastRun?.durationMs ?? null,
+        lastRunAt: lastRun?.createdAt ?? null,
+      };
+    });
+
+    return enriched;
   });
 
   // Get single test
@@ -248,18 +269,42 @@ export async function testRoutes(app: FastifyInstance) {
     return reply;
   });
 
-  // Get runs for a test
-  app.get<{ Params: { id: string } }>('/api/tests/:id/runs', async (request, reply) => {
+  // Get runs for a test (paginated)
+  app.get<{ Params: { id: string }; Querystring: { limit?: string; offset?: string } }>('/api/tests/:id/runs', async (request, reply) => {
     const { id } = request.params;
-    
+    const limit = Math.min(Math.max(parseInt(request.query.limit || '20') || 20, 1), 100);
+    const offset = Math.max(parseInt(request.query.offset || '0') || 0, 0);
+
     const test = await db.select().from(tests).where(eq(tests.id, id)).get();
-    
+
     if (!test) {
       return reply.status(404).send({ error: 'Test not found' });
     }
-    
-    const testRuns = await db.select().from(runs).where(eq(runs.testId, id)).orderBy(desc(runs.createdAt));
-    return testRuns;
+
+    const totalResult = db.select({ count: sql<number>`count(*)` }).from(runs).where(eq(runs.testId, id)).get();
+    const total = totalResult?.count ?? 0;
+
+    const testRuns = await db.select().from(runs).where(eq(runs.testId, id)).orderBy(desc(runs.createdAt)).limit(limit).offset(offset);
+    return { data: testRuns, total, limit, offset };
+  });
+
+  // Export single test
+  app.get<{ Params: { id: string } }>('/api/tests/:id/export', async (request, reply) => {
+    const { id } = request.params;
+    const test = await db.select().from(tests).where(eq(tests.id, id)).get();
+    if (!test) return reply.status(404).send({ error: 'Test not found' });
+
+    return {
+      version: 1,
+      type: 'test',
+      exportedAt: new Date().toISOString(),
+      test: {
+        name: test.name,
+        description: test.description,
+        config: test.config,
+        steps: test.steps,
+      },
+    };
   });
 
   // Get single run

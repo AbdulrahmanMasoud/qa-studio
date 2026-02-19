@@ -29,9 +29,11 @@ import {
   Video,
   StopCircle,
   Eye,
+  Shield,
 } from 'lucide-react';
 import { testsApi, recorderApi } from '../lib/api';
 import BaselineManager from '../components/BaselineManager';
+import { useToast } from '../components/Toast';
 import {
   TestStep,
   StepResult,
@@ -49,12 +51,16 @@ import RecorderBar from '../components/RecorderBar';
 export default function TestBuilderPage() {
   const { testId } = useParams<{ testId: string }>();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const [steps, setSteps] = useState<TestStep[]>([]);
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [useRealChrome, setUseRealChrome] = useState(false);
+  const [permissions, setPermissions] = useState<string[]>([]);
+  const [geolocation, setGeolocation] = useState<{ latitude: number; longitude: number } | undefined>();
+  const [showPermissions, setShowPermissions] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [showRunHistory, setShowRunHistory] = useState(false);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
@@ -97,6 +103,8 @@ export default function TestBuilderPage() {
     if (test) {
       setSteps(test.steps || []);
       setUseRealChrome(test.config?.useRealChrome ?? false);
+      setPermissions(test.config?.permissions ?? []);
+      setGeolocation(test.config?.geolocation);
       if (test.projectId) {
         // We don't have baseUrl from project here, so leave recorderUrl as-is if already set
       }
@@ -117,12 +125,14 @@ export default function TestBuilderPage() {
     mutationFn: (stepsToSave: TestStep[]) =>
       testsApi.update(testId!, {
         steps: stepsToSave,
-        config: { ...test?.config, useRealChrome },
+        config: { ...test?.config, useRealChrome, permissions, geolocation },
       }),
     onSuccess: () => {
       setHasChanges(false);
       queryClient.invalidateQueries({ queryKey: ['test', testId] });
+      toast.success('Test saved');
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to save test'),
   });
 
   const runMutation = useMutation({
@@ -178,8 +188,18 @@ export default function TestBuilderPage() {
       setIsRecording(true);
       setRecordedStepCount(0);
 
-      // Skip the initial goto step that will come from the navigation
-      let isFirstGoto = true;
+      // Add the initial goto step for the start URL
+      const gotoStep: TestStep = {
+        id: `rec_${Date.now().toString(36)}`,
+        action: 'goto',
+        url: recorderUrl,
+      } as TestStep;
+      setSteps((prev) => [...prev, gotoStep]);
+      setRecordedStepCount(1);
+      setHasChanges(true);
+
+      // Skip the server's duplicate goto from the initial navigation
+      let skipInitialGoto = true;
 
       // Open WebSocket to receive steps
       const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -190,12 +210,12 @@ export default function TestBuilderPage() {
         try {
           const data = JSON.parse(event.data);
           if (data.type === 'step') {
-            // Skip the first goto (initial navigation we triggered)
-            if (isFirstGoto && data.step.action === 'goto') {
-              isFirstGoto = false;
+            // Skip the server's duplicate goto from initial page.goto()
+            if (skipInitialGoto && data.step.action === 'goto') {
+              skipInitialGoto = false;
               return;
             }
-            isFirstGoto = false;
+            skipInitialGoto = false;
             setSteps((prev) => [...prev, data.step]);
             setRecordedStepCount((prev) => prev + 1);
             setHasChanges(true);
@@ -446,6 +466,98 @@ export default function TestBuilderPage() {
                 />
               </button>
             </label>
+            <div className="relative">
+              <button
+                onClick={() => setShowPermissions((p) => !p)}
+                className={clsx(
+                  'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                  permissions.length > 0
+                    ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'
+                    : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+                )}
+                title="Browser permissions"
+              >
+                <Shield className="h-4 w-4" />
+                {permissions.length > 0 && (
+                  <span className="text-xs bg-amber-200 text-amber-800 rounded-full px-1.5 py-0.5 font-semibold">
+                    {permissions.length}
+                  </span>
+                )}
+              </button>
+              {showPermissions && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setShowPermissions(false)} />
+                  <div className="absolute right-0 top-full mt-1 z-40 bg-white rounded-lg shadow-xl border border-gray-200 p-3 w-72">
+                    <h4 className="text-sm font-semibold text-gray-800 mb-2">Browser Permissions</h4>
+                    <p className="text-xs text-gray-500 mb-3">Auto-allow these permissions during test runs. All others are denied.</p>
+                    {[
+                      { key: 'geolocation', label: 'Geolocation' },
+                      { key: 'notifications', label: 'Notifications' },
+                      { key: 'camera', label: 'Camera' },
+                      { key: 'microphone', label: 'Microphone' },
+                      { key: 'clipboard-read', label: 'Clipboard Read' },
+                      { key: 'clipboard-write', label: 'Clipboard Write' },
+                    ].map(({ key, label }) => (
+                      <label key={key} className="flex items-center gap-2 py-1.5 cursor-pointer hover:bg-gray-50 rounded px-1">
+                        <input
+                          type="checkbox"
+                          checked={permissions.includes(key)}
+                          onChange={(e) => {
+                            setPermissions((prev) =>
+                              e.target.checked ? [...prev, key] : prev.filter((p) => p !== key)
+                            );
+                            if (key === 'geolocation' && !e.target.checked) {
+                              setGeolocation(undefined);
+                            }
+                            setHasChanges(true);
+                          }}
+                          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <span className="text-sm text-gray-700">{label}</span>
+                      </label>
+                    ))}
+                    {permissions.includes('geolocation') && (
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <p className="text-xs font-medium text-gray-600 mb-1.5">Mock Location</p>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder="Latitude"
+                            value={geolocation?.latitude ?? ''}
+                            onChange={(e) => {
+                              const lat = parseFloat(e.target.value);
+                              setGeolocation((prev) => ({
+                                latitude: isNaN(lat) ? 0 : lat,
+                                longitude: prev?.longitude ?? 0,
+                              }));
+                              setHasChanges(true);
+                            }}
+                            className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                          />
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder="Longitude"
+                            value={geolocation?.longitude ?? ''}
+                            onChange={(e) => {
+                              const lng = parseFloat(e.target.value);
+                              setGeolocation((prev) => ({
+                                latitude: prev?.latitude ?? 0,
+                                longitude: isNaN(lng) ? 0 : lng,
+                              }));
+                              setHasChanges(true);
+                            }}
+                            className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                          />
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">Leave empty to allow without mocking</p>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
             <button
               onClick={handleToggleRecorder}
               disabled={isRunning}

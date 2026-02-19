@@ -53,6 +53,12 @@ function ensureDir(path: string) {
 
 // Get browser instance based on config
 async function getBrowser(config: TestConfig): Promise<Browser> {
+  const suppressPopupArgs = [
+    '--deny-permission-prompts',
+    '--disable-features=Translate',
+    '--disable-notifications',
+  ];
+
   if (config.useRealChrome) {
     // Use system Chrome in headed mode to bypass bot detection.
     // Headless Chrome is reliably fingerprinted by Cloudflare even with stealth args.
@@ -63,11 +69,12 @@ async function getBrowser(config: TestConfig): Promise<Browser> {
         '--disable-blink-features=AutomationControlled',
         '--no-first-run',
         '--no-default-browser-check',
+        ...suppressPopupArgs,
       ],
     });
   }
 
-  const options = { headless: config.headless };
+  const options = { headless: config.headless, args: suppressPopupArgs };
 
   switch (config.browser) {
     case 'firefox':
@@ -339,6 +346,11 @@ export async function runTest(test: TestDefinition, onProgress?: (run: Partial<T
       recordVideo: { dir: videoDir },
     };
 
+    // Set geolocation if configured
+    if (test.config.geolocation) {
+      contextOptions.geolocation = test.config.geolocation;
+    }
+
     // When using real Chrome, set a realistic user agent to avoid detection
     if (test.config.useRealChrome) {
       contextOptions.userAgent =
@@ -346,6 +358,12 @@ export async function runTest(test: TestDefinition, onProgress?: (run: Partial<T
     }
 
     context = await browser.newContext(contextOptions);
+
+    // Grant configured permissions (overrides --deny-permission-prompts for these)
+    const permissions = test.config.permissions;
+    if (permissions && permissions.length > 0) {
+      await context.grantPermissions(permissions);
+    }
 
     // Patch navigator.webdriver to prevent bot detection
     if (test.config.useRealChrome) {
