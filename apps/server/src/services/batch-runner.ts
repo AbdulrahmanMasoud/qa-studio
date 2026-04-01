@@ -4,6 +4,7 @@ import { runTest } from './runner.js';
 interface BatchRunOptions {
   tests: TestDefinition[];
   variables?: Record<string, string>;
+  baseUrl?: string;
   concurrency?: number;
   onTestStart?: (testId: string, index: number) => void;
   onTestComplete?: (testId: string, run: TestRun, index: number) => void;
@@ -17,7 +18,7 @@ export interface BatchResult {
 }
 
 export async function runBatch(options: BatchRunOptions): Promise<BatchResult> {
-  const { tests, variables, concurrency = 1, onTestStart, onTestComplete } = options;
+  const { tests, variables, baseUrl, concurrency = 1, onTestStart, onTestComplete } = options;
   const startTime = Date.now();
   const runs: TestRun[] = [];
 
@@ -26,7 +27,7 @@ export async function runBatch(options: BatchRunOptions): Promise<BatchResult> {
     for (let i = 0; i < tests.length; i++) {
       const test = tests[i];
       onTestStart?.(test.id, i);
-      const run = await runTest(test, undefined, variables);
+      const run = await runTest(test, undefined, variables, undefined, baseUrl);
       runs.push(run);
       onTestComplete?.(test.id, run, i);
     }
@@ -37,6 +38,17 @@ export async function runBatch(options: BatchRunOptions): Promise<BatchResult> {
     const results: (TestRun | null)[] = new Array(tests.length).fill(null);
 
     await new Promise<void>((resolve) => {
+      const handleResult = (idx: number, testId: string, run: TestRun) => {
+        results[idx] = run;
+        activeCount--;
+        onTestComplete?.(testId, run, idx);
+        if (nextIndex >= tests.length && activeCount === 0) {
+          resolve();
+        } else {
+          tryNext();
+        }
+      };
+
       const tryNext = () => {
         while (activeCount < concurrency && nextIndex < tests.length) {
           const idx = nextIndex++;
@@ -44,17 +56,21 @@ export async function runBatch(options: BatchRunOptions): Promise<BatchResult> {
           activeCount++;
           onTestStart?.(test.id, idx);
 
-          runTest(test, undefined, variables).then((run) => {
-            results[idx] = run;
-            activeCount--;
-            onTestComplete?.(test.id, run, idx);
-
-            if (nextIndex >= tests.length && activeCount === 0) {
-              resolve();
-            } else {
-              tryNext();
-            }
-          });
+          runTest(test, undefined, variables, undefined, baseUrl)
+            .then((run) => handleResult(idx, test.id, run))
+            .catch((error) => {
+              const failedRun: TestRun = {
+                id: `failed-${test.id}-${Date.now()}`,
+                testId: test.id,
+                status: 'failed',
+                error: error instanceof Error ? error.message : String(error),
+                durationMs: 0,
+                stepResults: [],
+                createdAt: new Date().toISOString(),
+                completedAt: new Date().toISOString(),
+              };
+              handleResult(idx, test.id, failedRun);
+            });
         }
       };
       if (tests.length === 0) resolve();

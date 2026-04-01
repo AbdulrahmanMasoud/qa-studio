@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Regression - QA Studio Docs</title>
+  <meta name="description" content="Detect unintended visual changes with pixel-level screenshot comparison, baseline management, and an approve/reject workflow.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link active">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Visual Regression</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Visual Regression</h1>
+          <p class="subtitle">Detect unintended visual changes in your application with pixel-level screenshot comparison, baseline management, and an intuitive approve/reject workflow.</p>
+
+          <h2 id="overview">Overview</h2>
+          <p>Visual regression testing catches UI changes that functional tests miss. A button might still work correctly, but if its color, size, or position changed unexpectedly, visual regression testing will flag it.</p>
+          <p>QA Studio's visual regression system works in three stages:</p>
+          <ol>
+            <li><strong>Capture</strong> &mdash; take screenshots during test execution using the Screenshot action</li>
+            <li><strong>Compare</strong> &mdash; compare captured screenshots against stored baselines using pixel-level diffing</li>
+            <li><strong>Review</strong> &mdash; inspect diffs and approve or reject changes through the visual diff viewer</li>
+          </ol>
+
+          <h2 id="adding-screenshot-steps">Adding Screenshot Steps</h2>
+          <p>To capture screenshots during a test run, add <strong>Screenshot</strong> action steps to your test using the test builder.</p>
+          <p>The Screenshot action has two fields:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Description</th>
+                <th>Required</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>name</code></td>
+                <td>A unique name for this screenshot within the test. Used to match against baselines. Example: <code>homepage-hero</code></td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <td><code>fullPage</code></td>
+                <td>When enabled, captures the entire scrollable page instead of just the visible viewport. Default: <code>false</code></td>
+                <td>No</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout tip">
+            <div class="callout-title">Full-Page Screenshots</div>
+            <p>Use <code>fullPage: true</code> for comprehensive visual coverage. This captures everything on the page, including content below the fold. It is especially useful for landing pages, long forms, and content-heavy layouts where changes could happen anywhere on the page.</p>
+          </div>
+
+          <p>Place Screenshot steps at key points in your test &mdash; after page loads, after interactions, after animations settle. Each screenshot acts as a visual checkpoint that will be compared against its baseline on subsequent runs.</p>
+
+          <h2 id="running-with-screenshots">Running a Test with Screenshots</h2>
+          <p>When you run a test that contains Screenshot steps, the runner captures a PNG image at each screenshot step and stores it as part of the run results. The first time you run a test with screenshots, there are no baselines to compare against, so all screenshots are recorded with a <strong>new</strong> status.</p>
+          <p>Once baselines are set (see next section), subsequent runs will automatically compare each captured screenshot against its corresponding baseline and generate diff data.</p>
+
+          <h2 id="setting-baselines">Setting Baselines</h2>
+          <p>Baselines are the "known good" reference screenshots that future runs are compared against. You set baselines from a passing test run.</p>
+
+          <div class="steps">
+            <div class="step">
+              <h4>Run the Test</h4>
+              <p>Execute the test and verify that the application looks correct. This run will serve as your visual baseline.</p>
+            </div>
+
+            <div class="step">
+              <h4>Open the Baselines Panel</h4>
+              <p>Navigate to the test's detail view and open the <strong>Baselines</strong> panel. This panel shows all existing baselines for the test and provides controls for managing them.</p>
+            </div>
+
+            <div class="step">
+              <h4>Set Baselines from Run</h4>
+              <p>Click the <strong>"Set Baselines from Run"</strong> button. A dropdown lets you select which run to use. Choose the run that represents the correct visual state of your application.</p>
+            </div>
+
+            <div class="step">
+              <h4>Confirm</h4>
+              <p>The system extracts all screenshots from the selected run and stores them as baselines. Each baseline is keyed by the screenshot step's name, so baselines are per-test, per-step.</p>
+            </div>
+          </div>
+
+          <h2 id="how-comparison-works">How Comparison Works</h2>
+          <p>When a test runs and baselines exist, QA Studio performs pixel-level comparison using the <strong>pixelmatch</strong> library (powered by <strong>pngjs</strong> for PNG parsing).</p>
+          <p>The comparison process for each screenshot step:</p>
+          <ol>
+            <li>The runner captures the current screenshot (the "actual" image)</li>
+            <li>The system looks up the baseline image for this test + screenshot name combination</li>
+            <li>If a baseline exists, pixelmatch compares the two images pixel by pixel</li>
+            <li>A <strong>diff image</strong> is generated highlighting every pixel that differs (shown in magenta/red)</li>
+            <li>A <strong>diff percentage</strong> is calculated representing the proportion of pixels that changed</li>
+          </ol>
+          <p>The result is stored as a screenshot diff record containing references to the baseline image, actual image, diff image, and the calculated diff percentage.</p>
+
+          <h2 id="viewing-diffs">Viewing Diffs</h2>
+          <p>After running a test with baselines, open the run detail panel (<strong>RunDetailPanel</strong>) to inspect visual diffs. The panel includes a <strong>VisualDiffViewer</strong> component that provides a side-by-side comparison view.</p>
+
+          <h3 id="diff-viewer-layout">Diff Viewer Layout</h3>
+          <p>The visual diff viewer displays three images for each screenshot comparison:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Baseline</strong></td>
+                <td>The stored reference image representing the expected visual state</td>
+              </tr>
+              <tr>
+                <td><strong>Actual</strong></td>
+                <td>The screenshot captured during the current test run</td>
+              </tr>
+              <tr>
+                <td><strong>Diff</strong></td>
+                <td>A generated image highlighting pixel differences between baseline and actual, with changed pixels shown in a contrasting color</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>Above the images, the <strong>diff percentage</strong> is displayed, giving you an immediate sense of how much has changed. A diff of 0% means the images are identical; higher percentages indicate more visual change.</p>
+
+          <h2 id="diff-statuses">Diff Statuses</h2>
+          <p>Each screenshot comparison is assigned one of the following statuses:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>match</code></td>
+                <td>The actual screenshot is identical to the baseline (0% diff). No visual regression detected.</td>
+              </tr>
+              <tr>
+                <td><code>mismatch</code></td>
+                <td>The actual screenshot differs from the baseline. The diff percentage and diff image show what changed. Requires review.</td>
+              </tr>
+              <tr>
+                <td><code>new</code></td>
+                <td>No baseline exists for this screenshot step. This is normal for the first run or when a new screenshot step is added.</td>
+              </tr>
+              <tr>
+                <td><code>approved</code></td>
+                <td>A mismatch was reviewed and approved. The baseline is updated to the new screenshot.</td>
+              </tr>
+              <tr>
+                <td><code>rejected</code></td>
+                <td>A mismatch was reviewed and rejected. The diff is flagged as a visual regression that needs to be fixed.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2 id="approve-workflow">Approve Workflow</h2>
+          <p>When a screenshot comparison results in a <strong>mismatch</strong>, you need to decide whether the change is intentional or a regression.</p>
+          <p>If the change is <strong>intentional</strong> (for example, you redesigned a component), click the <strong>Approve</strong> button on the diff viewer. Approving a diff:</p>
+          <ul>
+            <li>Updates the baseline to the new (actual) screenshot</li>
+            <li>Sets the diff status to <code>approved</code></li>
+            <li>Future runs will compare against the updated baseline</li>
+          </ul>
+          <p>This effectively "accepts" the new visual state as the new standard.</p>
+
+          <h2 id="reject-workflow">Reject Workflow</h2>
+          <p>If the change is <strong>unintentional</strong> (a visual regression), click the <strong>Reject</strong> button. Rejecting a diff:</p>
+          <ul>
+            <li>Keeps the original baseline unchanged</li>
+            <li>Sets the diff status to <code>rejected</code></li>
+            <li>Marks the diff as a known regression that needs to be fixed in the application</li>
+          </ul>
+          <p>The rejected status serves as a flag for your team that a visual bug has been introduced and needs attention. Once the application is fixed and the test is re-run, the screenshot should match the baseline again.</p>
+
+          <h2 id="managing-baselines">Managing Baselines</h2>
+          <p>The Baselines panel for each test shows all stored baselines, organized by screenshot name. From this panel you can:</p>
+          <ul>
+            <li><strong>View</strong> the current baseline image for each screenshot step</li>
+            <li><strong>Delete</strong> individual baselines if they are no longer needed</li>
+            <li><strong>Set new baselines</strong> from a different run if the current ones are outdated</li>
+          </ul>
+
+          <div class="callout warning">
+            <div class="callout-title">Baseline Scope</div>
+            <p>Baselines are stored <strong>per-test, per-step</strong>. Each test maintains its own set of baselines keyed by the screenshot step name. Re-running a test overwrites the comparison images (actual and diff) but does <strong>not</strong> automatically update baselines &mdash; baselines only change when you explicitly set them from a run or approve a diff.</p>
+          </div>
+
+          <h2 id="best-practices">Best Practices</h2>
+          <ul>
+            <li><strong>Use descriptive screenshot names</strong> &mdash; names like <code>login-form</code>, <code>dashboard-loaded</code>, or <code>settings-modal</code> make it clear what each baseline represents.</li>
+            <li><strong>Wait for stability</strong> &mdash; add Wait steps before screenshots to ensure animations, transitions, and lazy-loaded content have finished rendering.</li>
+            <li><strong>Set baselines from clean runs</strong> &mdash; only set baselines from runs where the application is in its correct, expected visual state.</li>
+            <li><strong>Review diffs promptly</strong> &mdash; mismatches left unreviewed accumulate and make it harder to distinguish intentional changes from regressions.</li>
+            <li><strong>Use full-page screenshots strategically</strong> &mdash; full-page captures provide thorough coverage but produce larger images and are more sensitive to layout shifts in unrelated page areas.</li>
+            <li><strong>Keep viewport consistent</strong> &mdash; visual diffs are sensitive to viewport size. Use consistent <a href="browser-config.html">browser configuration</a> across runs to avoid false positives from viewport differences.</li>
+          </ul>
+
+          <div class="page-nav">
+            <a href="reusable-flows.html" class="prev">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Reusable Flows</span>
+            </a>
+            <a href="test-suites.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Test Suites &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

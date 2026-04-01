@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recording - QA Studio Docs</title>
+  <meta name="description" content="Record browser interactions automatically with intelligent 7-tier selector generation via WebSocket streaming.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Recording</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Recording</h1>
+          <p class="subtitle">Record browser interactions automatically with intelligent selector generation. QA Studio captures your clicks, text input, selections, and navigations as test steps in real-time via WebSocket streaming.</p>
+
+          <h2 id="how-recording-works">How Recording Works</h2>
+
+          <p>The recording feature launches a real Playwright browser instance on the server and establishes a <strong>WebSocket connection</strong> between the browser and the QA Studio dashboard. As you interact with the web page in the recording browser, events are captured by injected scripts and streamed back to the dashboard in real-time.</p>
+
+          <p>The architecture works as follows:</p>
+
+          <ol>
+            <li>The server launches a Playwright browser (non-headless, so you can see and interact with it)</li>
+            <li>JavaScript event listeners are injected into every page the browser navigates to</li>
+            <li>User interactions (clicks, typing, selections) trigger events that are captured by the injected scripts</li>
+            <li>Events are sent over a WebSocket connection to the server, which processes them into step definitions</li>
+            <li>Steps are streamed to the dashboard in real-time via the WebSocket, appearing instantly in the test builder's steps list</li>
+          </ol>
+
+          <h2 id="starting-a-recording">Starting a Recording</h2>
+
+          <p>To begin a recording session:</p>
+
+          <div class="steps">
+            <div class="step">
+              <h4>Open the Recorder</h4>
+              <p>In the test builder, click the <strong>Record</strong> button in the top toolbar. This opens the <strong>RecorderBar</strong> component at the top of the builder.</p>
+            </div>
+
+            <div class="step">
+              <h4>Enter a Starting URL</h4>
+              <p>Type the URL of the page you want to start recording from into the URL input field. This can be any publicly accessible URL or a local development server (e.g., <code>http://localhost:3000</code>).</p>
+            </div>
+
+            <div class="step">
+              <h4>Click Start</h4>
+              <p>Click the <strong>Start</strong> button. QA Studio launches a browser window and navigates to your URL. A <code>goto</code> step is automatically added as the first recorded step. The recorder bar shows a red recording indicator while the session is active.</p>
+            </div>
+
+            <div class="step">
+              <h4>Interact with the Page</h4>
+              <p>Use the browser window normally. Click buttons, fill in forms, select dropdown options, check checkboxes, and navigate between pages. Each interaction is captured and appears as a new step in the test builder.</p>
+            </div>
+          </div>
+
+          <h2 id="what-gets-captured">What Gets Captured</h2>
+
+          <p>The recorder captures the following types of browser interactions and converts them into test steps:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Interaction</th>
+                <th>Generated Step</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Mouse clicks</strong></td>
+                <td><code>click</code></td>
+                <td>Captures the element selector using the 7-tier priority system. Clicks on links, buttons, and any other elements are recorded.</td>
+              </tr>
+              <tr>
+                <td><strong>Text input</strong></td>
+                <td><code>fill</code></td>
+                <td>Captures text typed into input fields, textareas, and contenteditable elements. Input is <strong>debounced by 800ms</strong> to coalesce rapid keystrokes into a single fill step rather than recording each individual keystroke.</td>
+              </tr>
+              <tr>
+                <td><strong>Dropdown selection</strong></td>
+                <td><code>select</code></td>
+                <td>Captures the selected option value when a <code>&lt;select&gt;</code> element changes.</td>
+              </tr>
+              <tr>
+                <td><strong>Checkbox toggles</strong></td>
+                <td><code>check</code> / <code>uncheck</code></td>
+                <td>Captures checkbox state changes. Generates a <code>check</code> step when checked and <code>uncheck</code> when unchecked.</td>
+              </tr>
+              <tr>
+                <td><strong>Page navigations</strong></td>
+                <td><code>goto</code></td>
+                <td>When the browser navigates to a new URL (via link clicks, form submissions, or JavaScript redirects), an automatic <code>goto</code> step is inserted to capture the new URL.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout info">
+            <div class="callout-title">Info: Debounced Text Input</div>
+            <p>Text input is debounced by 800 milliseconds. This means QA Studio waits for you to stop typing for 800ms before generating a single <code>fill</code> step with the complete text value. This prevents generating dozens of individual keystroke steps and produces cleaner, more maintainable tests.</p>
+          </div>
+
+          <h2 id="selector-generation">Selector Generation Priority</h2>
+
+          <p>When the recorder captures an interaction with an element, it generates a selector using a <strong>7-tier priority system</strong>. The recorder tries each strategy in order and uses the first one that produces a unique, stable selector:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Priority</th>
+                <th>Strategy</th>
+                <th>Selector Mode</th>
+                <th>Example Output</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1 (highest)</strong></td>
+                <td><code>data-testid</code> attribute</td>
+                <td>testid</td>
+                <td><code>submit-form</code></td>
+              </tr>
+              <tr>
+                <td><strong>2</strong></td>
+                <td><code>id</code> attribute</td>
+                <td>css</td>
+                <td><code>#login-button</code></td>
+              </tr>
+              <tr>
+                <td><strong>3</strong></td>
+                <td>ARIA role + accessible name</td>
+                <td>role</td>
+                <td><code>button:Sign In</code></td>
+              </tr>
+              <tr>
+                <td><strong>4</strong></td>
+                <td>Placeholder text</td>
+                <td>placeholder</td>
+                <td><code>Enter your email</code></td>
+              </tr>
+              <tr>
+                <td><strong>5</strong></td>
+                <td>Label text</td>
+                <td>label</td>
+                <td><code>Email Address</code></td>
+              </tr>
+              <tr>
+                <td><strong>6</strong></td>
+                <td>Visible text content</td>
+                <td>text</td>
+                <td><code>Submit Order</code></td>
+              </tr>
+              <tr>
+                <td><strong>7 (lowest)</strong></td>
+                <td>CSS path</td>
+                <td>css</td>
+                <td><code>div.form &gt; button.primary</code></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>The priority system favors selectors that are resilient to UI changes. A <code>data-testid</code> attribute will never change due to styling or text updates, making it the most stable option. CSS paths are used as a last resort because they are the most fragile and can break when the page layout changes.</p>
+
+          <div class="callout tip">
+            <div class="callout-title">Tip: Use data-testid Attributes</div>
+            <p>If you control the source code of the application you are testing, add <code>data-testid</code> attributes to interactive elements (buttons, inputs, links, form controls). This gives the recorder the most stable possible selectors, and your tests will be resilient to CSS refactors, text content changes, and layout modifications.</p>
+          </div>
+
+          <h2 id="stopping-and-reviewing">Stopping and Reviewing</h2>
+
+          <p>When you are done interacting with the page:</p>
+
+          <ol>
+            <li>Click the <strong>Stop</strong> button in the recorder bar. This closes the recording browser and ends the WebSocket connection.</li>
+            <li>All captured steps are now visible in the test builder's steps list (center panel).</li>
+            <li>Review each step and its generated selector. You can click any step to edit its properties in the step editor (right panel).</li>
+            <li>Reorder steps by dragging them, delete unnecessary steps, or modify selectors and values as needed.</li>
+            <li>Add additional steps manually if the recorder did not capture everything you need (e.g., assertions, waits, screenshots).</li>
+          </ol>
+
+          <p>The recorded steps are fully editable after the session ends. They behave exactly like manually-created steps and support all the same features including drag-and-drop reordering, environment variable substitution, and selector mode changes.</p>
+
+          <h3 id="post-recording-refinement">Post-Recording Refinement</h3>
+
+          <p>After stopping a recording, it is good practice to:</p>
+
+          <ul>
+            <li><strong>Add assertion steps</strong> &mdash; The recorder captures interactions but does not generate assertions. Add <code>assert</code> steps to verify expected outcomes (e.g., assert that a success message is visible, the URL changed, or a specific element contains the expected text).</li>
+            <li><strong>Add wait steps</strong> &mdash; If your application has animations or async loading, add explicit <code>wait</code> steps where needed to ensure elements are ready before interacting with them.</li>
+            <li><strong>Review selectors</strong> &mdash; Check that the auto-generated selectors are targeting the intended elements. If a CSS path was generated (priority 7), consider switching to a more stable selector mode.</li>
+            <li><strong>Add screenshot steps</strong> &mdash; Insert <code>screenshot</code> steps at key points for visual regression testing.</li>
+            <li><strong>Remove redundant steps</strong> &mdash; The recorder may capture extra clicks or navigations that are not essential to the test flow. Delete any unnecessary steps.</li>
+          </ul>
+
+          <h2 id="recording-tips">Recording Best Practices</h2>
+
+          <div class="callout tip">
+            <div class="callout-title">Tips for Better Recordings</div>
+            <p><strong>Use <code>data-testid</code> attributes</strong> on your application's interactive elements. This produces the most stable, resilient selectors that do not break when CSS classes, text content, or page structure changes.</p>
+            <p><strong>Review generated selectors</strong> after each recording session. The auto-generated selectors are a starting point, not the final word. Adjust selector modes and values to match your team's testing conventions.</p>
+            <p><strong>Recording works with any website.</strong> You can record interactions on third-party sites, local development servers, staging environments, or production URLs. The recorder does not require any special setup on the target application (though <code>data-testid</code> attributes help if you can add them).</p>
+            <p><strong>Keep recordings focused.</strong> Record one user flow at a time rather than trying to capture an entire application walkthrough. Shorter, focused tests are easier to maintain and debug.</p>
+            <p><strong>Pause between actions</strong> if needed. The 800ms debounce on text input means you should finish typing before clicking elsewhere to ensure the full text is captured.</p>
+          </div>
+
+          <h2 id="limitations">Limitations</h2>
+
+          <p>The recording feature has a few limitations to be aware of:</p>
+
+          <ul>
+            <li><strong>Hover actions</strong> &mdash; Hover interactions are not recorded because distinguishing intentional hovers from incidental mouse movement is unreliable. Add <code>hover</code> steps manually if needed.</li>
+            <li><strong>Keyboard shortcuts</strong> &mdash; Complex keyboard combinations (Ctrl+C, Ctrl+V, etc.) are not captured. Use <code>press</code> steps manually for keyboard actions.</li>
+            <li><strong>File uploads</strong> &mdash; File upload dialogs are not recorded. Handle file uploads with manual steps.</li>
+            <li><strong>iframes</strong> &mdash; Interactions inside iframes may not be captured depending on the iframe's origin and security policy.</li>
+            <li><strong>Shadow DOM</strong> &mdash; Elements inside closed shadow DOM trees may not be reachable by the injected event listeners.</li>
+          </ul>
+
+          <div class="page-nav">
+            <a href="test-builder.html">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Test Builder</span>
+            </a>
+            <a href="actions-reference.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Actions Reference &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

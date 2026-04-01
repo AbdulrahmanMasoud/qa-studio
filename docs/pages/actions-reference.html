@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actions Reference - QA Studio Docs</title>
+  <meta name="description" content="Complete reference for all 17 test step actions in QA Studio, including configuration fields, selector modes, and Playwright equivalents.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Actions Reference</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Actions Reference</h1>
+          <p class="subtitle">Complete reference for all 17 test step actions available in QA Studio, including their configuration fields, usage examples, and Playwright equivalents.</p>
+
+          <h2 id="all-actions">All Actions Overview</h2>
+
+          <p>Every test step has an <strong>action</strong> type that determines what the step does. The following table lists all 17 actions available in QA Studio:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Internal Name</th>
+                <th>Description</th>
+                <th>Key Fields</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Navigate</strong></td>
+                <td><code>goto</code></td>
+                <td>Navigate the browser to a URL</td>
+                <td><code>url</code></td>
+              </tr>
+              <tr>
+                <td><strong>Click</strong></td>
+                <td><code>click</code></td>
+                <td>Click an element on the page</td>
+                <td><code>selector</code>, <code>selectorMode</code></td>
+              </tr>
+              <tr>
+                <td><strong>Fill</strong></td>
+                <td><code>fill</code></td>
+                <td>Type text into an input field</td>
+                <td><code>selector</code>, <code>selectorMode</code>, <code>value</code></td>
+              </tr>
+              <tr>
+                <td><strong>Select</strong></td>
+                <td><code>select</code></td>
+                <td>Choose an option from a dropdown</td>
+                <td><code>selector</code>, <code>selectorMode</code>, <code>value</code></td>
+              </tr>
+              <tr>
+                <td><strong>Check</strong></td>
+                <td><code>check</code></td>
+                <td>Check a checkbox</td>
+                <td><code>selector</code>, <code>selectorMode</code></td>
+              </tr>
+              <tr>
+                <td><strong>Uncheck</strong></td>
+                <td><code>uncheck</code></td>
+                <td>Uncheck a checkbox</td>
+                <td><code>selector</code>, <code>selectorMode</code></td>
+              </tr>
+              <tr>
+                <td><strong>Hover</strong></td>
+                <td><code>hover</code></td>
+                <td>Hover the mouse over an element</td>
+                <td><code>selector</code>, <code>selectorMode</code></td>
+              </tr>
+              <tr>
+                <td><strong>Press Key</strong></td>
+                <td><code>press</code></td>
+                <td>Press a keyboard key or combination</td>
+                <td><code>key</code></td>
+              </tr>
+              <tr>
+                <td><strong>Wait</strong></td>
+                <td><code>wait</code></td>
+                <td>Wait for a condition before proceeding</td>
+                <td><code>waitType</code>, <code>value</code> or <code>selector</code></td>
+              </tr>
+              <tr>
+                <td><strong>Screenshot</strong></td>
+                <td><code>screenshot</code></td>
+                <td>Capture a screenshot of the page</td>
+                <td><code>name</code>, <code>fullPage</code></td>
+              </tr>
+              <tr>
+                <td><strong>Assert</strong></td>
+                <td><code>assert</code></td>
+                <td>Verify page state against expected values</td>
+                <td><code>assertType</code>, <code>condition</code>, <code>value</code></td>
+              </tr>
+              <tr>
+                <td><strong>Use Flow</strong></td>
+                <td><code>use-flow</code></td>
+                <td>Execute a reusable flow from the project</td>
+                <td><code>flowId</code></td>
+              </tr>
+              <tr>
+                <td><strong>If</strong></td>
+                <td><code>if</code></td>
+                <td>Start a conditional block</td>
+                <td><code>conditionType</code>, condition fields</td>
+              </tr>
+              <tr>
+                <td><strong>Else</strong></td>
+                <td><code>else</code></td>
+                <td>Alternate branch of an if block</td>
+                <td>(none)</td>
+              </tr>
+              <tr>
+                <td><strong>End If</strong></td>
+                <td><code>end-if</code></td>
+                <td>Close a conditional block</td>
+                <td>(none)</td>
+              </tr>
+              <tr>
+                <td><strong>Loop</strong></td>
+                <td><code>loop</code></td>
+                <td>Start a loop block</td>
+                <td><code>conditionType</code>, <code>maxIterations</code>, condition fields</td>
+              </tr>
+              <tr>
+                <td><strong>End Loop</strong></td>
+                <td><code>end-loop</code></td>
+                <td>Close a loop block</td>
+                <td>(none)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <hr>
+
+          <h2 id="navigate">Navigate (goto)</h2>
+
+          <p>The Navigate action directs the browser to a specific URL. It is typically the first step in any test.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>url</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The URL to navigate to. Must include the protocol (http:// or https://).</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>The URL field supports <a href="environment-variables.html">environment variable</a> substitution, so you can use dynamic URLs:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "goto",
+  "url": "{{BASE_URL}}/login"
+}</code></pre>
+          </div>
+
+          <p>Playwright equivalent: <code>await page.goto(url)</code></p>
+
+          <h2 id="click">Click</h2>
+
+          <p>The Click action clicks an element located by the specified selector. Playwright automatically waits for the element to be visible and enabled before clicking.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>selector</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The selector value used to locate the element.</td>
+              </tr>
+              <tr>
+                <td><code>selectorMode</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>The selector strategy. Defaults to <code>css</code>. See <a href="#selector-modes">Selector Modes</a>.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "click",
+  "selector": "submit-btn",
+  "selectorMode": "testid"
+}</code></pre>
+          </div>
+
+          <h2 id="fill">Fill</h2>
+
+          <p>The Fill action clears an input field and types the specified value. It targets text inputs, textareas, and contenteditable elements.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>selector</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The selector value to locate the input element.</td>
+              </tr>
+              <tr>
+                <td><code>selectorMode</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Selector strategy. Defaults to <code>css</code>.</td>
+              </tr>
+              <tr>
+                <td><code>value</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The text to type into the field. Supports <code>{{variables}}</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "fill",
+  "selector": "Email Address",
+  "selectorMode": "label",
+  "value": "{{TEST_EMAIL}}"
+}</code></pre>
+          </div>
+
+          <p>Playwright equivalent: <code>await page.getByLabel('Email Address').fill(value)</code></p>
+
+          <h2 id="select">Select</h2>
+
+          <p>The Select action chooses an option from a <code>&lt;select&gt;</code> dropdown by the option's <code>value</code> attribute.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>selector</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The selector to locate the <code>&lt;select&gt;</code> element.</td>
+              </tr>
+              <tr>
+                <td><code>selectorMode</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Selector strategy. Defaults to <code>css</code>.</td>
+              </tr>
+              <tr>
+                <td><code>value</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The option <code>value</code> attribute to select.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "select",
+  "selector": "#country",
+  "selectorMode": "css",
+  "value": "us"
+}</code></pre>
+          </div>
+
+          <p>Playwright equivalent: <code>await page.locator('#country').selectOption('us')</code></p>
+
+          <h2 id="wait">Wait</h2>
+
+          <p>The Wait action pauses test execution until a condition is met. There are three wait types, each with different required fields:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Wait Type</th>
+                <th>Required Field</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>time</strong></td>
+                <td><code>value</code> (milliseconds)</td>
+                <td>Wait for a fixed duration. For example, <code>2000</code> waits for 2 seconds.</td>
+              </tr>
+              <tr>
+                <td><strong>selector</strong></td>
+                <td><code>selector</code>, <code>selectorMode</code></td>
+                <td>Wait until an element matching the selector appears on the page and becomes visible.</td>
+              </tr>
+              <tr>
+                <td><strong>url</strong></td>
+                <td><code>value</code> (URL or pattern)</td>
+                <td>Wait until the browser URL matches or contains the specified value.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Wait for Time</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "wait",
+  "waitType": "time",
+  "value": "3000"
+}</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Wait for Selector</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "wait",
+  "waitType": "selector",
+  "selector": ".loading-complete",
+  "selectorMode": "css"
+}</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Wait for URL</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "wait",
+  "waitType": "url",
+  "value": "/dashboard"
+}</code></pre>
+          </div>
+
+          <h2 id="screenshot">Screenshot</h2>
+
+          <p>The Screenshot action captures a screenshot of the current page state. Screenshots are used for <a href="visual-regression.html">visual regression testing</a> and are stored with the test run results.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>name</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>A descriptive name for the screenshot (e.g., "homepage", "after-login"). Used as the baseline identifier for visual regression.</td>
+              </tr>
+              <tr>
+                <td><code>fullPage</code></td>
+                <td>boolean</td>
+                <td>No</td>
+                <td>If <code>true</code>, captures the entire scrollable page. If <code>false</code> (default), captures only the visible viewport.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "screenshot",
+  "name": "checkout-page",
+  "fullPage": true
+}</code></pre>
+          </div>
+
+          <p>Playwright equivalent: <code>await page.screenshot({ path: '...', fullPage: true })</code></p>
+
+          <div class="callout info">
+            <div class="callout-title">Info</div>
+            <p>When a screenshot name matches an existing baseline, QA Studio uses <strong>pixelmatch</strong> to perform a pixel-level comparison. If differences are detected, a diff image is generated and the step result includes the mismatch percentage. See <a href="visual-regression.html">Visual Regression</a> for the full approval workflow.</p>
+          </div>
+
+          <h2 id="assert">Assert</h2>
+
+          <p>The Assert action verifies that the current page state matches an expected condition. If the assertion fails, the step fails and the test stops.</p>
+
+          <h3 id="assert-types">Assert Types</h3>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Assert Type</th>
+                <th>Description</th>
+                <th>Required Fields</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>visible</strong></td>
+                <td>Assert that an element matching the selector is visible on the page.</td>
+                <td><code>selector</code>, <code>selectorMode</code></td>
+              </tr>
+              <tr>
+                <td><strong>hidden</strong></td>
+                <td>Assert that an element matching the selector is not visible (hidden or absent).</td>
+                <td><code>selector</code>, <code>selectorMode</code></td>
+              </tr>
+              <tr>
+                <td><strong>text</strong></td>
+                <td>Assert that an element's text content matches the expected value using the specified condition.</td>
+                <td><code>selector</code>, <code>selectorMode</code>, <code>condition</code>, <code>value</code></td>
+              </tr>
+              <tr>
+                <td><strong>url</strong></td>
+                <td>Assert that the current page URL matches the expected value using the specified condition.</td>
+                <td><code>condition</code>, <code>value</code></td>
+              </tr>
+              <tr>
+                <td><strong>title</strong></td>
+                <td>Assert that the page title matches the expected value using the specified condition.</td>
+                <td><code>condition</code>, <code>value</code></td>
+              </tr>
+              <tr>
+                <td><strong>value</strong></td>
+                <td>Assert that an input element's current value matches the expected value using the specified condition.</td>
+                <td><code>selector</code>, <code>selectorMode</code>, <code>condition</code>, <code>value</code></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 id="assert-conditions">Assert Conditions</h3>
+
+          <p>When an assert type requires a <code>condition</code>, you can use one of these three comparison modes:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Condition</th>
+                <th>Description</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>equals</strong></td>
+                <td>Exact string match. The actual value must be identical to the expected value.</td>
+                <td>URL equals <code>https://example.com/dashboard</code></td>
+              </tr>
+              <tr>
+                <td><strong>contains</strong></td>
+                <td>Substring match. The actual value must contain the expected value somewhere within it.</td>
+                <td>Title contains <code>Dashboard</code></td>
+              </tr>
+              <tr>
+                <td><strong>matches</strong></td>
+                <td>Regular expression match. The actual value is tested against the expected value as a regex pattern.</td>
+                <td>URL matches <code>/users/\d+/profile</code></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Assert Visible Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "assert",
+  "assertType": "visible",
+  "selector": "Welcome back!",
+  "selectorMode": "text"
+}</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Assert URL Contains Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "assert",
+  "assertType": "url",
+  "condition": "contains",
+  "value": "/dashboard"
+}</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Assert Text Matches Regex</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "assert",
+  "assertType": "text",
+  "selector": ".order-number",
+  "selectorMode": "css",
+  "condition": "matches",
+  "value": "^ORD-\\d{6}$"
+}</code></pre>
+          </div>
+
+          <h2 id="use-flow">Use Flow</h2>
+
+          <p>The Use Flow action executes a <a href="reusable-flows.html">reusable flow</a> from your project. Flows are shared step sequences that can be referenced across multiple tests, reducing duplication.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>flowId</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The ID of the flow to execute. Selected from a dropdown of flows available in the current project.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>When the test runner encounters a Use Flow step, it resolves the flow's steps and executes them inline. Flows can reference other flows, up to a <strong>maximum nesting depth of 10</strong> to prevent infinite recursion.</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "use-flow",
+  "flowId": "flow_abc123"
+}</code></pre>
+          </div>
+
+          <div class="callout info">
+            <div class="callout-title">Info</div>
+            <p>The flow dropdown in the step editor only shows flows from the same project. If the referenced flow is deleted, the Use Flow step will fail at runtime with an error indicating the flow could not be found.</p>
+          </div>
+
+          <h2 id="press-key">Press Key</h2>
+
+          <p>The Press Key action simulates pressing a keyboard key or key combination.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>key</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The key to press. Uses Playwright key names: <code>Enter</code>, <code>Tab</code>, <code>Escape</code>, <code>Backspace</code>, <code>ArrowDown</code>, <code>Control+a</code>, etc.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "press",
+  "key": "Enter"
+}</code></pre>
+          </div>
+
+          <p>Playwright equivalent: <code>await page.keyboard.press('Enter')</code></p>
+
+          <h2 id="check-uncheck">Check &amp; Uncheck</h2>
+
+          <p>The Check action checks a checkbox element, and Uncheck unchecks it. Both require a selector to locate the checkbox.</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Check Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "check",
+  "selector": "I agree to the terms",
+  "selectorMode": "label"
+}</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Uncheck Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "uncheck",
+  "selector": "subscribe-newsletter",
+  "selectorMode": "testid"
+}</code></pre>
+          </div>
+
+          <h2 id="hover">Hover</h2>
+
+          <p>The Hover action moves the mouse pointer over an element, triggering any hover-related effects (CSS :hover, tooltip display, dropdown menus, etc.).</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "action": "hover",
+  "selector": "nav-menu",
+  "selectorMode": "testid"
+}</code></pre>
+          </div>
+
+          <p>Playwright equivalent: <code>await page.getByTestId('nav-menu').hover()</code></p>
+
+          <hr>
+
+          <h2 id="selector-modes">Selector Modes</h2>
+
+          <p>Actions that target page elements (Click, Fill, Select, Check, Uncheck, Hover, and some Assert/Wait types) support a <code>selectorMode</code> field that determines how the selector string is interpreted:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Mode</th>
+                <th>Selector Input</th>
+                <th>Playwright Equivalent</th>
+                <th>Best For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>css</strong></td>
+                <td><code>.btn-primary</code></td>
+                <td><code>page.locator('.btn-primary')</code></td>
+                <td>Complex CSS selectors, ID targeting, class-based selection</td>
+              </tr>
+              <tr>
+                <td><strong>text</strong></td>
+                <td><code>Sign In</code></td>
+                <td><code>page.getByText('Sign In')</code></td>
+                <td>Buttons and links with unique visible text</td>
+              </tr>
+              <tr>
+                <td><strong>role</strong></td>
+                <td><code>button:Submit</code></td>
+                <td><code>page.getByRole('button', { name: 'Submit' })</code></td>
+                <td>Accessible elements with ARIA roles. Format: <code>role:name</code></td>
+              </tr>
+              <tr>
+                <td><strong>placeholder</strong></td>
+                <td><code>Enter email</code></td>
+                <td><code>page.getByPlaceholder('Enter email')</code></td>
+                <td>Input fields with distinctive placeholder text</td>
+              </tr>
+              <tr>
+                <td><strong>label</strong></td>
+                <td><code>Email Address</code></td>
+                <td><code>page.getByLabel('Email Address')</code></td>
+                <td>Form fields with associated <code>&lt;label&gt;</code> elements</td>
+              </tr>
+              <tr>
+                <td><strong>testid</strong></td>
+                <td><code>submit-btn</code></td>
+                <td><code>page.getByTestId('submit-btn')</code></td>
+                <td>Elements with <code>data-testid</code> attributes. Most stable and recommended.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout tip">
+            <div class="callout-title">Tip: Choosing a Selector Mode</div>
+            <p>For the most resilient tests, prefer <strong>testid</strong> (requires <code>data-testid</code> attributes in your app), then <strong>role</strong> or <strong>label</strong> for form elements, then <strong>text</strong> for buttons/links, and use <strong>css</strong> as a last resort. The recorder automatically picks the best available mode using the <a href="recording.html#selector-generation">7-tier priority system</a>.</p>
+          </div>
+
+          <h2 id="control-flow-actions">Control Flow Actions</h2>
+
+          <p>The If, Else, End If, Loop, and End Loop actions provide conditional execution and looping capabilities. These are covered in detail on the <a href="control-flow.html">Control Flow</a> page.</p>
+
+          <h2 id="environment-variables-in-actions">Environment Variables in Actions</h2>
+
+          <p>All text-based fields (url, value, selector) support environment variable substitution using the <code>{{variableName}}</code> syntax. Variables are resolved at runtime from the project's environment variables. This allows you to parameterize tests for different environments:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Variable Substitution</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "steps": [
+    { "action": "goto", "url": "{{BASE_URL}}/login" },
+    { "action": "fill", "selector": "#email", "value": "{{TEST_USER}}" },
+    { "action": "fill", "selector": "#password", "value": "{{TEST_PASS}}" },
+    { "action": "click", "selector": "Sign In", "selectorMode": "text" }
+  ]
+}</code></pre>
+          </div>
+
+          <p>See <a href="environment-variables.html">Environment Variables</a> for details on creating and managing variables.</p>
+
+          <div class="page-nav">
+            <a href="recording.html">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Recording</span>
+            </a>
+            <a href="control-flow.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Control Flow &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Reference - QA Studio Docs</title>
+  <meta name="description" content="Complete REST API reference for QA Studio: all endpoints for projects, tests, runs, suites, flows, visual regression, analytics, recorder, schedules, and admin.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">API Reference</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>API Reference</h1>
+          <p class="subtitle">Complete reference for the QA Studio REST API. All endpoints use JSON request/response bodies and are served from <code>http://localhost:3001</code> by default.</p>
+
+          <h2 id="general-conventions">General Conventions</h2>
+
+          <ul>
+            <li><strong>Base URL</strong>: <code>http://localhost:3001/api</code> (configurable via the <code>PORT</code> environment variable)</li>
+            <li><strong>Content-Type</strong>: All request bodies must be <code>application/json</code></li>
+            <li><strong>IDs</strong>: All resource IDs are generated server-side as unique strings</li>
+            <li><strong>Timestamps</strong>: All timestamps are ISO 8601 strings (e.g., <code>2026-02-20T14:30:00.000Z</code>)</li>
+          </ul>
+
+          <h3 id="pagination">Pagination</h3>
+
+          <p>List endpoints that support pagination accept the following query parameters:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>limit</code></td>
+                <td>number</td>
+                <td>20</td>
+                <td>Number of items to return (min: 1, max: 100)</td>
+              </tr>
+              <tr>
+                <td><code>offset</code></td>
+                <td>number</td>
+                <td>0</td>
+                <td>Number of items to skip</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>Paginated responses include metadata:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Paginated Response</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "data": [ ... ],
+  "total": 42,
+  "limit": 20,
+  "offset": 0
+}</code></pre>
+          </div>
+
+          <h3 id="error-responses">Error Responses</h3>
+
+          <p>Errors return an appropriate HTTP status code with a JSON body:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Error Response</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>// 404 Not Found
+{ "error": "Project not found" }
+
+// 400 Bad Request (validation error)
+{ "error": [{ "code": "too_small", "minimum": 1, "path": ["name"], "message": "String must contain at least 1 character(s)" }] }</code></pre>
+          </div>
+
+          <h3 id="sse-streaming">SSE Streaming</h3>
+
+          <p>Run endpoints support Server-Sent Events (SSE) for real-time progress. To enable SSE, set the <code>Accept</code> header to <code>text/event-stream</code>. The response streams events in the following format:</p>
+
+          <div class="code-block" data-lang="text">
+            <div class="code-header">
+              <span class="code-lang">SSE Format</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>data: {"type":"step-result","stepResult":{...},"stepIndex":0}
+
+data: {"type":"step-result","stepResult":{...},"stepIndex":1}
+
+data: {"type":"complete","run":{...}}
+
+</code></pre>
+          </div>
+
+          <p>Each <code>data:</code> line contains a JSON object followed by two newlines. The stream ends when the <code>complete</code> event is sent.</p>
+
+          <!-- ==================== PROJECTS ==================== -->
+
+          <h2 id="projects">Projects</h2>
+
+          <h3 id="list-projects">List All Projects</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects</code></pre>
+          </div>
+
+          <p>Returns an array of all projects, ordered by creation date.</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Response 200</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>[
+  {
+    "id": "proj_abc123",
+    "name": "My Website",
+    "baseUrl": "https://example.com",
+    "description": "Main website tests",
+    "createdAt": "2026-02-01T10:00:00.000Z",
+    "updatedAt": "2026-02-15T14:30:00.000Z"
+  }
+]</code></pre>
+          </div>
+
+          <h3 id="get-project">Get Project</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects/:id</code></pre>
+          </div>
+
+          <p>Returns a single project by ID. Returns <code>404</code> if not found.</p>
+
+          <h3 id="create-project">Create Project</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/projects</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Request Body</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "name": "My Website",
+  "baseUrl": "https://example.com",
+  "description": "Main website tests"
+}</code></pre>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>name</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Project name (1-100 characters)</td>
+              </tr>
+              <tr>
+                <td><code>baseUrl</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Default base URL (must be a valid URL)</td>
+              </tr>
+              <tr>
+                <td><code>description</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Project description (max 500 characters)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>Returns <code>201</code> with the created project object.</p>
+
+          <h3 id="update-project">Update Project</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>PUT /api/projects/:id</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Request Body</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "name": "Updated Name",
+  "baseUrl": "https://staging.example.com",
+  "description": "Updated description",
+  "variables": {
+    "API_KEY": "sk_test_new_key",
+    "BASE_URL": "https://staging.example.com"
+  }
+}</code></pre>
+          </div>
+
+          <p>All fields are optional. Only provided fields are updated. The <code>variables</code> field accepts a string-to-string record for <a href="environment-variables.html">environment variable</a> substitution.</p>
+
+          <h3 id="delete-project">Delete Project</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>DELETE /api/projects/:id</code></pre>
+          </div>
+
+          <p>Deletes a project and returns <code>{ "success": true }</code>.</p>
+
+          <h3 id="export-project">Export Project</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects/:id/export</code></pre>
+          </div>
+
+          <p>Returns a complete JSON export of the project including all tests and flows. See the <a href="export-import.html">Export &amp; Import</a> page for format details.</p>
+
+          <h3 id="import-into-project">Import Into Project</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/projects/:id/import</code></pre>
+          </div>
+
+          <p>Accepts a test or project export JSON body. Creates new tests and flows with new IDs. Returns <code>{ "success": true, "importedTests": N, "importedFlows": N }</code>.</p>
+
+          <!-- ==================== TESTS ==================== -->
+
+          <h2 id="tests">Tests</h2>
+
+          <h3 id="list-tests">List Tests for a Project</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects/:projectId/tests</code></pre>
+          </div>
+
+          <p>Returns all tests in a project, ordered by creation date. Each test is enriched with last run data:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Response 200</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>[
+  {
+    "id": "test_xyz789",
+    "projectId": "proj_abc123",
+    "name": "Login Flow",
+    "description": "Verifies login works",
+    "config": { "browser": "chromium", "viewport": { "width": 1280, "height": 720 }, "timeout": 30000, "headless": true, "useRealChrome": false },
+    "steps": [ ... ],
+    "createdAt": "2026-02-01T10:00:00.000Z",
+    "updatedAt": "2026-02-15T14:30:00.000Z",
+    "lastRunStatus": "passed",
+    "lastRunDurationMs": 3450,
+    "lastRunAt": "2026-02-20T08:00:00.000Z"
+  }
+]</code></pre>
+          </div>
+
+          <h3 id="get-test">Get Test</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/tests/:id</code></pre>
+          </div>
+
+          <h3 id="create-test">Create Test</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/tests</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Request Body</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "projectId": "proj_abc123",
+  "name": "Homepage Test",
+  "description": "Verify homepage loads",
+  "config": {
+    "browser": "chromium",
+    "viewport": { "width": 1280, "height": 720 },
+    "timeout": 30000,
+    "headless": true,
+    "useRealChrome": false
+  },
+  "steps": [
+    { "id": "step_1", "action": "goto", "url": "https://example.com" },
+    { "id": "step_2", "action": "assert", "assertType": "title", "condition": "contains", "value": "Example" }
+  ]
+}</code></pre>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>projectId</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Parent project ID</td>
+              </tr>
+              <tr>
+                <td><code>name</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Test name (1-100 characters)</td>
+              </tr>
+              <tr>
+                <td><code>description</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Description (max 500 characters)</td>
+              </tr>
+              <tr>
+                <td><code>config</code></td>
+                <td>object</td>
+                <td>No</td>
+                <td>Browser config (merged with defaults)</td>
+              </tr>
+              <tr>
+                <td><code>steps</code></td>
+                <td>array</td>
+                <td>No</td>
+                <td>Array of test step objects</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>Returns <code>201</code> with the created test.</p>
+
+          <h3 id="update-test">Update Test</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>PUT /api/tests/:id</code></pre>
+          </div>
+
+          <p>Accepts the same fields as create (except <code>projectId</code>). All fields are optional. Config is merged with existing config.</p>
+
+          <h3 id="delete-test">Delete Test</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>DELETE /api/tests/:id</code></pre>
+          </div>
+
+          <h3 id="clone-test">Clone Test</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/tests/:id/clone</code></pre>
+          </div>
+
+          <p>Creates a copy of the test with " (Copy)" appended to the name. All steps receive new IDs. Returns <code>201</code> with the cloned test.</p>
+
+          <h3 id="run-test">Run Test</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/tests/:id/run</code></pre>
+          </div>
+
+          <p>Executes the test. Supports two response modes:</p>
+
+          <ul>
+            <li><strong>Standard</strong>: Returns the complete run result as JSON when execution finishes.</li>
+            <li><strong>SSE Streaming</strong>: Set <code>Accept: text/event-stream</code> to receive real-time step-by-step progress events.</li>
+          </ul>
+
+          <p>SSE events for single test runs:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">SSE Events</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>// Step result (sent after each step completes)
+{ "type": "step-result", "stepResult": { "stepId": "step_1", "status": "passed", ... }, "stepIndex": 0 }
+
+// Complete (sent when test finishes)
+{ "type": "complete", "run": { "id": "run_abc", "status": "passed", "durationMs": 3450, ... } }</code></pre>
+          </div>
+
+          <h3 id="get-test-runs">Get Test Runs</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/tests/:id/runs?limit=20&amp;offset=0</code></pre>
+          </div>
+
+          <p>Returns paginated run history for a test, ordered by most recent first.</p>
+
+          <h3 id="export-test">Export Test</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/tests/:id/export</code></pre>
+          </div>
+
+          <p>Returns the test as a portable JSON export. See <a href="export-import.html">Export &amp; Import</a>.</p>
+
+          <!-- ==================== RUNS ==================== -->
+
+          <h2 id="runs">Runs</h2>
+
+          <h3 id="get-run">Get Run</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/runs/:id</code></pre>
+          </div>
+
+          <p>Returns a single run by ID, including all step results, screenshots, error messages, and timing data.</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Response 200</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "id": "run_abc123",
+  "testId": "test_xyz789",
+  "status": "passed",
+  "durationMs": 3450,
+  "stepResults": [
+    { "stepId": "step_1", "status": "passed", "durationMs": 1200 },
+    { "stepId": "step_2", "status": "passed", "durationMs": 250, "screenshotPath": "data/screenshots/run_abc123_step_2.png" }
+  ],
+  "error": null,
+  "screenshotPath": null,
+  "videoPath": null,
+  "createdAt": "2026-02-20T14:30:00.000Z"
+}</code></pre>
+          </div>
+
+          <!-- ==================== SUITES ==================== -->
+
+          <h2 id="suites">Suites</h2>
+
+          <h3 id="list-suites">List Suites</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects/:projectId/suites</code></pre>
+          </div>
+
+          <p>Returns all suites in a project, ordered by creation date.</p>
+
+          <h3 id="create-suite">Create Suite</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/suites</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Request Body</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "projectId": "proj_abc123",
+  "name": "Smoke Tests",
+  "testIds": ["test_1", "test_2", "test_3"]
+}</code></pre>
+          </div>
+
+          <h3 id="update-suite">Update Suite</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>PUT /api/suites/:id</code></pre>
+          </div>
+
+          <p>Update the suite name and/or test IDs. Both fields are optional.</p>
+
+          <h3 id="delete-suite">Delete Suite</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>DELETE /api/suites/:id</code></pre>
+          </div>
+
+          <h3 id="run-all-project-tests">Run All Project Tests</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/projects/:projectId/run-all</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Request Body (optional)</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "concurrency": 3
+}</code></pre>
+          </div>
+
+          <p>Runs all tests in the project with the specified concurrency (1-5, default: 1). Responds with an SSE stream:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">SSE Events</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>// Test started
+{ "type": "test-start", "testId": "test_1", "testName": "Login Flow", "index": 0 }
+
+// Test completed
+{ "type": "test-complete", "testId": "test_1", "testName": "Login Flow", "index": 0, "status": "passed", "durationMs": 3200, "error": null, "runId": "run_abc" }
+
+// Suite complete (final event)
+{ "type": "suite-complete", "suiteRunId": "sr_xyz", "status": "passed", "passed": 5, "failed": 0, "durationMs": 12400 }</code></pre>
+          </div>
+
+          <h3 id="run-suite">Run Suite</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/suites/:id/run</code></pre>
+          </div>
+
+          <p>Same behavior as run-all, but only executes the tests in the specified suite. Accepts the same <code>concurrency</code> body parameter. Returns SSE events in the same format.</p>
+
+          <h3 id="list-suite-runs">List Suite Runs</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects/:projectId/suite-runs?limit=20&amp;offset=0</code></pre>
+          </div>
+
+          <p>Returns paginated suite run history for a project.</p>
+
+          <h3 id="get-suite-run">Get Suite Run</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/suite-runs/:id</code></pre>
+          </div>
+
+          <p>Returns a single suite run record including status, test counts, run IDs, and duration.</p>
+
+          <!-- ==================== FLOWS ==================== -->
+
+          <h2 id="flows">Flows</h2>
+
+          <h3 id="list-flows">List Flows</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects/:projectId/flows</code></pre>
+          </div>
+
+          <p>Returns all reusable flows in a project, ordered by creation date.</p>
+
+          <h3 id="get-flow">Get Flow</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/flows/:id</code></pre>
+          </div>
+
+          <h3 id="create-flow">Create Flow</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/flows</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Request Body</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "projectId": "proj_abc123",
+  "name": "Login Steps",
+  "description": "Reusable login sequence",
+  "steps": [
+    { "id": "fs_1", "action": "goto", "url": "{{BASE_URL}}/login" },
+    { "id": "fs_2", "action": "fill", "selector": "#email", "value": "{{USER_EMAIL}}" },
+    { "id": "fs_3", "action": "click", "selector": "button[type=submit]" }
+  ]
+}</code></pre>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>projectId</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Parent project ID</td>
+              </tr>
+              <tr>
+                <td><code>name</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>Flow name (1-100 characters)</td>
+              </tr>
+              <tr>
+                <td><code>description</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Description (max 500 characters)</td>
+              </tr>
+              <tr>
+                <td><code>steps</code></td>
+                <td>array</td>
+                <td>No</td>
+                <td>Array of step objects</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 id="update-flow">Update Flow</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>PUT /api/flows/:id</code></pre>
+          </div>
+
+          <p>Update a flow's name, description, or steps. All fields are optional.</p>
+
+          <h3 id="delete-flow">Delete Flow</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>DELETE /api/flows/:id</code></pre>
+          </div>
+
+          <!-- ==================== VISUAL REGRESSION ==================== -->
+
+          <h2 id="visual-regression">Visual Regression</h2>
+
+          <h3 id="get-baselines">Get Baselines</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/tests/:testId/baselines</code></pre>
+          </div>
+
+          <p>Returns all baseline screenshots for a test.</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Response 200</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>[
+  {
+    "id": "bl_abc123",
+    "testId": "test_xyz789",
+    "stepId": "step_5",
+    "screenshotPath": "data/screenshots/baseline_step_5.png",
+    "runId": "run_def456",
+    "createdAt": "2026-02-15T10:00:00.000Z"
+  }
+]</code></pre>
+          </div>
+
+          <h3 id="set-baselines-from-run">Set Baselines from Run</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/tests/:testId/baselines/from-run/:runId</code></pre>
+          </div>
+
+          <p>Sets baseline screenshots from a specific run. Extracts all screenshots from the run's step results, deletes any existing baselines (and their associated diffs) for the test, and creates new baseline records. Returns <code>201</code> with the new baselines array.</p>
+
+          <p>Returns <code>400</code> if the run contains no screenshots.</p>
+
+          <h3 id="get-diffs-for-run">Get Diffs for a Run</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/runs/:runId/diffs</code></pre>
+          </div>
+
+          <p>Returns all screenshot diffs generated for a specific run, including baseline path, actual path, diff image path, mismatch percentage, and status (pending, approved, or rejected).</p>
+
+          <h3 id="approve-diff">Approve Diff</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/diffs/:id/approve</code></pre>
+          </div>
+
+          <p>Approves a screenshot diff and updates the corresponding baseline to use the actual screenshot from the new run. Returns <code>{ "success": true, "status": "approved" }</code>.</p>
+
+          <h3 id="reject-diff">Reject Diff</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/diffs/:id/reject</code></pre>
+          </div>
+
+          <p>Rejects a screenshot diff (the baseline remains unchanged). Returns <code>{ "success": true, "status": "rejected" }</code>.</p>
+
+          <h3 id="delete-baseline">Delete Baseline</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>DELETE /api/baselines/:id</code></pre>
+          </div>
+
+          <p>Deletes a baseline and all its associated screenshot diffs.</p>
+
+          <!-- ==================== ANALYTICS ==================== -->
+
+          <h2 id="analytics">Analytics</h2>
+
+          <h3 id="analytics-summary">Summary</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects/:projectId/analytics/summary</code></pre>
+          </div>
+
+          <p>Returns total tests, total runs, pass rate percentage, average duration in milliseconds, and test status counts (passing, failing, noRuns). See the <a href="analytics.html">Analytics</a> page for details.</p>
+
+          <h3 id="analytics-trends">Trends</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects/:projectId/analytics/trends?days=30</code></pre>
+          </div>
+
+          <p>Returns daily pass/fail statistics. The <code>days</code> parameter controls the lookback window (default: 30).</p>
+
+          <h3 id="analytics-flaky">Flaky Tests</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects/:projectId/analytics/flaky</code></pre>
+          </div>
+
+          <p>Returns flaky test analysis based on the last 10 runs per test. See the <a href="analytics.html#flaky-test-detection">Flaky Test Detection</a> section for the algorithm details.</p>
+
+          <!-- ==================== RECORDER ==================== -->
+
+          <h2 id="recorder">Recorder</h2>
+
+          <h3 id="start-recording">Start Recording</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/recorder/start</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Request Body</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "testId": "test_xyz789",
+  "startUrl": "https://example.com"
+}</code></pre>
+          </div>
+
+          <p>Launches a browser and starts capturing user interactions. Returns a session ID:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Response 200</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "sessionId": "rec_abc123"
+}</code></pre>
+          </div>
+
+          <h3 id="stop-recording">Stop Recording</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/recorder/stop</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Request Body</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "sessionId": "rec_abc123"
+}</code></pre>
+          </div>
+
+          <p>Stops the recording session and closes the browser. Returns <code>{ "success": true }</code>.</p>
+
+          <h3 id="recorder-websocket">WebSocket Stream</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">WebSocket</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/recorder/ws?sessionId=rec_abc123</code></pre>
+          </div>
+
+          <p>Establishes a WebSocket connection that streams captured steps in real-time. Messages are JSON objects:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">WebSocket Messages</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>// Step captured
+{ "type": "step", "step": { "action": "click", "selector": "#login-btn", ... } }
+
+// Session ended
+{ "type": "disconnect" }
+
+// Error
+{ "type": "error", "message": "Session not found" }</code></pre>
+          </div>
+
+          <div class="callout info">
+            <div class="callout-title">Info</div>
+            <p>The recorder WebSocket endpoint requires WebSocket support in your reverse proxy if you are running behind one. See the <a href="self-hosting.html">Self-Hosting</a> page for nginx configuration.</p>
+          </div>
+
+          <!-- ==================== SCHEDULES ==================== -->
+
+          <h2 id="schedules">Schedules</h2>
+
+          <h3 id="list-schedules">List Schedules</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects/:projectId/schedules</code></pre>
+          </div>
+
+          <p>Returns all schedules for a project, ordered by creation date.</p>
+
+          <h3 id="create-schedule">Create Schedule</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/schedules</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Request Body</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "projectId": "proj_abc123",
+  "name": "Nightly Regression",
+  "cronExpression": "0 0 * * *",
+  "suiteId": "suite_xyz789",
+  "enabled": true
+}</code></pre>
+          </div>
+
+          <p>See <a href="scheduled-runs.html">Scheduled Runs</a> for cron expression format and behavior.</p>
+
+          <h3 id="update-schedule">Update Schedule</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>PUT /api/schedules/:id</code></pre>
+          </div>
+
+          <p>Update name, cronExpression, suiteId, or enabled status. All fields are optional.</p>
+
+          <h3 id="delete-schedule">Delete Schedule</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>DELETE /api/schedules/:id</code></pre>
+          </div>
+
+          <p>Unregisters the cron job and deletes the schedule record.</p>
+
+          <!-- ==================== ADMIN ==================== -->
+
+          <h2 id="admin">Admin</h2>
+
+          <h3 id="manual-cleanup">Manual Cleanup</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/admin/cleanup</code></pre>
+          </div>
+
+          <p>Triggers manual cleanup of expired run data based on the <code>RETENTION_DAYS</code> environment variable (default: 30). Removes old runs, suite runs, screenshots, videos, and diff images. Returns <code>{ "success": true }</code>.</p>
+
+          <!-- ==================== HEALTH ==================== -->
+
+          <h2 id="health">Health</h2>
+
+          <h3 id="health-check">Health Check</h3>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/health</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Response 200</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "status": "ok",
+  "timestamp": "2026-02-20T14:30:00.000Z"
+}</code></pre>
+          </div>
+
+          <p>A simple health check endpoint that confirms the server is running and responsive. Useful for monitoring and load balancer health checks.</p>
+
+          <div class="page-nav">
+            <a href="export-import.html">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Export &amp; Import</span>
+            </a>
+            <a href="self-hosting.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Self-Hosting &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

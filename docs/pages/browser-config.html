@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browser Configuration - QA Studio Docs</title>
+  <meta name="description" content="Configure per-test browser settings including browser engine, viewport, timeouts, headless mode, Real Browser mode for bot detection bypass, and browser permissions.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link active">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Browser Configuration</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Browser Configuration</h1>
+          <p class="subtitle">Configure per-test browser settings including engine selection, viewport size, timeouts, headless mode, Real Browser mode for bot detection bypass, and granular browser permissions.</p>
+
+          <h2 id="overview">Overview</h2>
+          <p>Every test in QA Studio can have its own browser configuration. These settings control which browser engine is used, the viewport dimensions, step timeouts, and advanced options like bot detection bypass and permission grants. Browser settings are configured in the test's settings panel within the test builder.</p>
+
+          <h2 id="browser-selection">Browser Selection</h2>
+          <p>QA Studio supports three browser engines through Playwright. Each test can target a different browser.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Browser</th>
+                <th>Engine</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Chromium</strong></td>
+                <td>Blink (Chrome/Edge)</td>
+                <td>Default browser. Fastest execution. Most widely used rendering engine. Best compatibility with web standards.</td>
+              </tr>
+              <tr>
+                <td><strong>Firefox</strong></td>
+                <td>Gecko</td>
+                <td>Mozilla's rendering engine. Useful for testing Firefox-specific behavior and ensuring cross-browser compatibility.</td>
+              </tr>
+              <tr>
+                <td><strong>WebKit</strong></td>
+                <td>WebKit (Safari)</td>
+                <td>Apple's rendering engine used in Safari. Test Safari compatibility without needing a Mac or iOS device.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout tip">
+            <div class="callout-title">Safari Testing with WebKit</div>
+            <p>Use the WebKit browser option to test Safari compatibility without needing a Mac. Playwright's WebKit implementation closely mirrors Safari's rendering behavior, making it a reliable way to catch Safari-specific issues on any platform.</p>
+          </div>
+
+          <h2 id="viewport-configuration">Viewport Configuration</h2>
+          <p>The viewport setting controls the browser window dimensions for the test. It is specified as <strong>width x height</strong> in pixels.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Setting</th>
+                <th>Default</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Width</strong></td>
+                <td>1280</td>
+                <td>Browser viewport width in pixels</td>
+              </tr>
+              <tr>
+                <td><strong>Height</strong></td>
+                <td>720</td>
+                <td>Browser viewport height in pixels</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>Common viewport presets:</p>
+          <ul>
+            <li><strong>Desktop</strong>: 1280x720, 1920x1080</li>
+            <li><strong>Tablet</strong>: 768x1024 (iPad), 1024x768 (landscape)</li>
+            <li><strong>Mobile</strong>: 375x667 (iPhone SE), 390x844 (iPhone 14), 360x800 (Android)</li>
+          </ul>
+          <p>Viewport size affects responsive layouts, media queries, and element visibility. If your application has responsive breakpoints, create separate tests with appropriate viewport sizes to verify each layout.</p>
+
+          <h2 id="timeout">Timeout</h2>
+          <p>The timeout setting controls the <strong>maximum wait time per step</strong> in milliseconds. If a step (such as waiting for a selector, navigation, or assertion) does not complete within this time, it fails with a timeout error.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Setting</th>
+                <th>Range</th>
+                <th>Default</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Timeout</strong></td>
+                <td>1,000 ms &ndash; 120,000 ms</td>
+                <td>30,000 ms (30 seconds)</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>Adjust the timeout based on your application's performance:</p>
+          <ul>
+            <li><strong>Decrease</strong> for fast applications to catch slow-loading issues earlier</li>
+            <li><strong>Increase</strong> for applications with heavy API calls, server-side rendering, or slow third-party dependencies</li>
+          </ul>
+
+          <h2 id="headless-mode">Headless Mode</h2>
+          <p>By default, tests run in <strong>headless mode</strong>, which means the browser runs without a visible window. This is faster and uses less resources, making it ideal for automated and CI/CD environments.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Setting</th>
+                <th>Default</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Headless</strong></td>
+                <td><code>true</code></td>
+                <td>When enabled, the browser runs without a visible window. Disable to see the browser during execution.</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>Disable headless mode when you want to <strong>visually observe</strong> test execution for debugging. The browser window will appear on screen and you can watch each step execute in real time. This is useful for understanding failures or verifying that selectors target the correct elements.</p>
+
+          <h2 id="real-browser-mode">Real Browser Mode</h2>
+          <p>Real Browser mode is an advanced feature that uses your system's installed <strong>Google Chrome</strong> instead of Playwright's bundled Chromium. This is essential for testing websites that employ bot detection systems.</p>
+
+          <h3 id="what-real-browser-does">What It Does</h3>
+          <p>When Real Browser mode is enabled, QA Studio:</p>
+          <ul>
+            <li>Launches your system's Google Chrome installation instead of Playwright's Chromium</li>
+            <li>Patches <code>navigator.webdriver</code> to return <code>false</code> (Playwright normally sets this to <code>true</code>)</li>
+            <li>Disables all automation flags and indicators that bot detection scripts look for</li>
+            <li>Uses a realistic user agent string from a real Chrome installation</li>
+            <li>Runs in <strong>headed mode</strong> (visible browser window) for maximum authenticity</li>
+          </ul>
+
+          <h3 id="detection-comparison">Detection Comparison</h3>
+          <p>The following table shows how standard Playwright and Real Browser mode compare against common bot detection signals:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Detection Signal</th>
+                <th>Standard Playwright</th>
+                <th>Real Browser Mode</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>navigator.webdriver</code></td>
+                <td><code>true</code> (detected)</td>
+                <td><code>false</code> (passes)</td>
+              </tr>
+              <tr>
+                <td>Automation flags</td>
+                <td>Present (detected)</td>
+                <td>Removed (passes)</td>
+              </tr>
+              <tr>
+                <td>User agent string</td>
+                <td>Contains "HeadlessChrome"</td>
+                <td>Real Chrome user agent</td>
+              </tr>
+              <tr>
+                <td>Chrome runtime</td>
+                <td>Missing <code>window.chrome</code></td>
+                <td>Full <code>window.chrome</code> object</td>
+              </tr>
+              <tr>
+                <td>WebGL renderer</td>
+                <td>Software renderer</td>
+                <td>Hardware GPU renderer</td>
+              </tr>
+              <tr>
+                <td>Browser plugins</td>
+                <td>Empty array</td>
+                <td>Real plugin list</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 id="real-browser-requirements">Requirements</h3>
+          <ul>
+            <li><strong>Google Chrome</strong> must be installed on the server/machine running QA Studio</li>
+            <li>The Chrome installation must be accessible at the standard system path</li>
+            <li>Real Browser mode always runs in <strong>headed mode</strong> (a visible browser window is required)</li>
+          </ul>
+
+          <h3 id="when-to-use-real-browser">When to Use Real Browser Mode</h3>
+          <p>Enable Real Browser mode when testing sites protected by:</p>
+          <ul>
+            <li><strong>Cloudflare</strong> Bot Management / Turnstile challenges</li>
+            <li><strong>Akamai</strong> Bot Manager</li>
+            <li><strong>PerimeterX</strong> / HUMAN bot detection</li>
+            <li><strong>DataDome</strong> bot protection</li>
+            <li>Any site that blocks requests from automated browsers</li>
+          </ul>
+
+          <div class="callout warning">
+            <div class="callout-title">Real Browser Mode Limitations</div>
+            <p>Real Browser mode requires Google Chrome installed on the server and always runs in headed mode (visible browser window). This means it is <strong>slower</strong> than headless Playwright execution and requires a display server (or virtual framebuffer like Xvfb) on headless Linux servers. Use it only when standard Playwright is blocked by bot detection.</p>
+          </div>
+
+          <h2 id="browser-permissions">Browser Permissions</h2>
+          <p>QA Studio allows you to grant browser permissions for each test. Permissions are passed directly to the Playwright browser context, simulating user-granted permission prompts.</p>
+
+          <h3 id="available-permissions">Available Permissions</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Permission</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>geolocation</code></td>
+                <td>Allows the page to access the user's geographic location via <code>navigator.geolocation</code></td>
+              </tr>
+              <tr>
+                <td><code>camera</code></td>
+                <td>Grants access to the device camera via <code>getUserMedia</code></td>
+              </tr>
+              <tr>
+                <td><code>microphone</code></td>
+                <td>Grants access to the device microphone via <code>getUserMedia</code></td>
+              </tr>
+              <tr>
+                <td><code>clipboard-read</code></td>
+                <td>Allows reading from the system clipboard via <code>navigator.clipboard.readText()</code></td>
+              </tr>
+              <tr>
+                <td><code>clipboard-write</code></td>
+                <td>Allows writing to the system clipboard via <code>navigator.clipboard.writeText()</code></td>
+              </tr>
+              <tr>
+                <td><code>notifications</code></td>
+                <td>Allows the page to show desktop notifications via the Notifications API</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 id="granting-permissions">How to Grant Permissions</h3>
+          <p>In the test's browser configuration panel, toggle the permissions you want to grant. When the test runs, these permissions are set on the Playwright browser context before any page navigation, so the page sees them as already granted &mdash; no permission dialogs will appear.</p>
+
+          <h2 id="mock-geolocation">Mock Geolocation</h2>
+          <p>QA Studio can mock the browser's geolocation API to return specific coordinates. This is useful for testing location-dependent features like store finders, delivery area checks, or location-based content.</p>
+
+          <h3 id="geolocation-setup">Setting Up Mock Geolocation</h3>
+          <p>In the test's browser configuration, provide:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Description</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Latitude</strong></td>
+                <td>Geographic latitude in decimal degrees</td>
+                <td><code>37.7749</code> (San Francisco)</td>
+              </tr>
+              <tr>
+                <td><strong>Longitude</strong></td>
+                <td>Geographic longitude in decimal degrees</td>
+                <td><code>-122.4194</code> (San Francisco)</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>When mock geolocation is configured, any call to <code>navigator.geolocation.getCurrentPosition()</code> or <code>navigator.geolocation.watchPosition()</code> on the page will return the specified coordinates instead of the real device location.</p>
+
+          <div class="callout info">
+            <div class="callout-title">Geolocation Permission Required</div>
+            <p>For mock geolocation to work, you must also <strong>grant the geolocation permission</strong> in the browser permissions section. Without the permission grant, the page's geolocation request will be denied regardless of the mock coordinates.</p>
+          </div>
+
+          <h3 id="geolocation-example">Example: Testing a Store Locator</h3>
+          <p>To test a store locator that shows nearby stores based on the user's location:</p>
+          <ol>
+            <li>Enable the <strong>geolocation</strong> permission in browser permissions</li>
+            <li>Set latitude to <code>40.7128</code> and longitude to <code>-74.0060</code> (New York City)</li>
+            <li>Add a Navigate step to the store locator page</li>
+            <li>Click the "Find Nearby Stores" button</li>
+            <li>Assert that New York area stores are displayed</li>
+          </ol>
+          <p>Run the same test with different coordinates (e.g., <code>51.5074</code>, <code>-0.1278</code> for London) to verify that location-specific results change appropriately.</p>
+
+          <h2 id="configuration-summary">Configuration Summary</h2>
+          <p>Here is a complete summary of all browser configuration options:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Setting</th>
+                <th>Default</th>
+                <th>Options / Range</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Browser</strong></td>
+                <td>Chromium</td>
+                <td>Chromium, Firefox, WebKit</td>
+              </tr>
+              <tr>
+                <td><strong>Viewport Width</strong></td>
+                <td>1280</td>
+                <td>Any positive integer (pixels)</td>
+              </tr>
+              <tr>
+                <td><strong>Viewport Height</strong></td>
+                <td>720</td>
+                <td>Any positive integer (pixels)</td>
+              </tr>
+              <tr>
+                <td><strong>Timeout</strong></td>
+                <td>30000 ms</td>
+                <td>1000 &ndash; 120000 ms</td>
+              </tr>
+              <tr>
+                <td><strong>Headless</strong></td>
+                <td>true</td>
+                <td>true / false</td>
+              </tr>
+              <tr>
+                <td><strong>Real Browser</strong></td>
+                <td>false</td>
+                <td>true / false</td>
+              </tr>
+              <tr>
+                <td><strong>Permissions</strong></td>
+                <td>None</td>
+                <td>geolocation, camera, microphone, clipboard-read, clipboard-write, notifications</td>
+              </tr>
+              <tr>
+                <td><strong>Geolocation Latitude</strong></td>
+                <td>None</td>
+                <td>-90 to 90 (decimal degrees)</td>
+              </tr>
+              <tr>
+                <td><strong>Geolocation Longitude</strong></td>
+                <td>None</td>
+                <td>-180 to 180 (decimal degrees)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2 id="best-practices">Best Practices</h2>
+          <ul>
+            <li><strong>Start with defaults</strong> &mdash; Chromium, 1280x720, 30s timeout, headless mode. Only change settings when you have a specific reason.</li>
+            <li><strong>Test multiple browsers</strong> &mdash; clone critical tests and set them to run on Firefox and WebKit to catch cross-browser issues.</li>
+            <li><strong>Use responsive viewports</strong> &mdash; if your app has responsive breakpoints, create test variants with mobile and tablet viewports.</li>
+            <li><strong>Reserve Real Browser mode</strong> &mdash; only enable it for sites with active bot detection. It is slower and requires Chrome to be installed.</li>
+            <li><strong>Keep timeouts reasonable</strong> &mdash; a 30-second timeout is generous for most applications. Lower it to 10-15 seconds for fast apps to catch performance regressions. Raise it only for known slow operations.</li>
+            <li><strong>Consistent viewports for visual regression</strong> &mdash; when using <a href="visual-regression.html">visual regression testing</a>, ensure viewport settings are identical across runs to avoid false diffs from layout differences.</li>
+          </ul>
+
+          <div class="page-nav">
+            <a href="environment-variables.html" class="prev">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Environment Variables</span>
+            </a>
+            <a href="analytics.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Analytics &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

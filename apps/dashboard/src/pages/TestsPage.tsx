@@ -16,6 +16,7 @@ import {
   BarChart3,
   Workflow,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { projectsApi, testsApi, suiteRunsApi, analyticsApi } from '../lib/api';
 import EnvironmentVariablesModal from '../components/EnvironmentVariablesModal';
 import BatchRunProgress, { BatchTestStatus } from '../components/BatchRunProgress';
@@ -57,6 +58,7 @@ export default function TestsPage() {
       queryClient.invalidateQueries({ queryKey: ['tests', projectId] });
       setShowCreate(false);
       setNewTestName('');
+      toast.success('Test created');
     },
   });
 
@@ -64,6 +66,7 @@ export default function TestsPage() {
     mutationFn: testsApi.clone,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tests', projectId] });
+      toast.success('Test cloned');
     },
   });
 
@@ -71,6 +74,7 @@ export default function TestsPage() {
     mutationFn: testsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tests', projectId] });
+      toast.success('Test deleted');
     },
   });
 
@@ -80,6 +84,7 @@ export default function TestsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects', projectId] });
       setShowVariables(false);
+      toast.success('Variables saved');
     },
   });
 
@@ -147,6 +152,7 @@ export default function TestsPage() {
       });
     } catch (error) {
       console.error('Batch run failed:', error);
+      toast.error(error instanceof Error ? error.message : 'Batch run failed');
     } finally {
       setBatchRunning(false);
       queryClient.invalidateQueries({ queryKey: ['tests', projectId] });

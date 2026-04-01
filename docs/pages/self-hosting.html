@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Self-Hosting - QA Studio Docs</title>
+  <meta name="description" content="Deploy QA Studio on your own infrastructure with Node.js, PM2, systemd, and nginx. Configure environment variables, data persistence, and reverse proxy.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Self-Hosting</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Self-Hosting</h1>
+          <p class="subtitle">Deploy QA Studio on your own server with full control over your data. QA Studio uses SQLite for storage, so there is no external database to configure &mdash; just build, run, and persist the data directory.</p>
+
+          <h2 id="prerequisites">Prerequisites</h2>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Requirement</th>
+                <th>Version</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Node.js</strong></td>
+                <td>20 or higher</td>
+                <td>Required. LTS version recommended for production stability.</td>
+              </tr>
+              <tr>
+                <td><strong>pnpm</strong></td>
+                <td>8 or higher</td>
+                <td>Required for building the project (workspace management).</td>
+              </tr>
+              <tr>
+                <td><strong>Google Chrome</strong></td>
+                <td>Latest stable</td>
+                <td>Optional. Only needed if tests use Real Browser mode (<code>useRealChrome: true</code>).</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout info">
+            <div class="callout-title">Info</div>
+            <p>QA Studio uses SQLite as its database, which is embedded in the server process. No external database server (PostgreSQL, MySQL, etc.) is needed. The entire database is a single file in the data directory.</p>
+          </div>
+
+          <h2 id="production-build">Production Build</h2>
+
+          <p>Build both the server and the dashboard for production:</p>
+
+          <div class="code-block" data-lang="bash">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code># Install dependencies
+pnpm install
+
+# Install Playwright browsers
+pnpm setup
+
+# Build all packages
+pnpm build</code></pre>
+          </div>
+
+          <p>This produces two build artifacts:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Package</th>
+                <th>Output</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Dashboard</strong></td>
+                <td><code>apps/dashboard/dist/</code></td>
+                <td>Static HTML, CSS, and JavaScript files. Can be served by nginx, the Fastify server, or any static file host.</td>
+              </tr>
+              <tr>
+                <td><strong>Server</strong></td>
+                <td><code>apps/server/dist/</code></td>
+                <td>Compiled TypeScript to JavaScript. The entry point is <code>apps/server/dist/server.js</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2 id="running-in-production">Running in Production</h2>
+
+          <p>Start the server with the <code>NODE_ENV</code> set to production:</p>
+
+          <div class="code-block" data-lang="bash">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>NODE_ENV=production node apps/server/dist/server.js</code></pre>
+          </div>
+
+          <p>The server starts on port 3001 by default and listens on all interfaces (<code>0.0.0.0</code>). On startup, it:</p>
+
+          <ul>
+            <li>Initializes (or opens) the SQLite database</li>
+            <li>Runs any pending schema migrations</li>
+            <li>Creates the <code>./data/</code> directory if it does not exist</li>
+            <li>Registers all API routes and WebSocket support</li>
+            <li>Starts the automatic cleanup schedule (daily at 3 AM)</li>
+            <li>Loads all enabled <a href="scheduled-runs.html">scheduled runs</a> via <code>loadAllSchedules()</code></li>
+          </ul>
+
+          <h2 id="environment-variables">Environment Variables</h2>
+
+          <p>QA Studio supports the following environment variables for configuration:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Variable</th>
+                <th>Default</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>PORT</code></td>
+                <td><code>3001</code></td>
+                <td>The port the API server listens on.</td>
+              </tr>
+              <tr>
+                <td><code>RETENTION_DAYS</code></td>
+                <td><code>30</code></td>
+                <td>Number of days to keep run data before automatic cleanup. Set to <code>0</code> to disable cleanup.</td>
+              </tr>
+              <tr>
+                <td><code>NODE_ENV</code></td>
+                <td><code>development</code></td>
+                <td>Set to <code>production</code> for production deployments.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2 id="data-directory">Data Directory</h2>
+
+          <p>QA Studio stores all persistent data in the <code>./data/</code> directory relative to the current working directory. This directory is created automatically on first startup.</p>
+
+          <div class="code-block" data-lang="bash">
+            <div class="code-header">
+              <span class="code-lang">Data Directory Structure</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>data/
+├── qa-studio.db        # SQLite database (all projects, tests, runs, etc.)
+├── screenshots/        # Screenshot images from test runs
+├── videos/             # Video recordings from test runs
+└── diffs/              # Visual regression diff images</code></pre>
+          </div>
+
+          <p>For data durability, you must persist this directory. If the <code>data/</code> directory is lost, all projects, tests, run history, screenshots, and visual regression baselines are lost.</p>
+
+          <div class="callout warning">
+            <div class="callout-title">Warning</div>
+            <p>Back up the <code>data/</code> directory regularly, especially the <code>qa-studio.db</code> file. This single SQLite file contains all your projects, tests, flows, run history, schedules, and baselines. Consider setting up automated daily backups to a remote location.</p>
+          </div>
+
+          <h3 id="backup-strategy">Backup Strategy</h3>
+
+          <p>A simple backup approach for the SQLite database:</p>
+
+          <div class="code-block" data-lang="bash">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code># Simple file copy (stop writes first for consistency, or use SQLite backup API)
+cp data/qa-studio.db backups/qa-studio-$(date +%Y%m%d).db
+
+# Or use SQLite's built-in backup command (safe even while server is running)
+sqlite3 data/qa-studio.db ".backup backups/qa-studio-$(date +%Y%m%d).db"</code></pre>
+          </div>
+
+          <p>For the screenshots, videos, and diffs directories, you can use <code>rsync</code> or any file backup tool to sync them to a backup location.</p>
+
+          <h2 id="pm2-setup">PM2 Process Manager</h2>
+
+          <p><a href="https://pm2.io" target="_blank" rel="noopener">PM2</a> is a popular process manager for Node.js that provides automatic restarts, log management, and cluster mode. Here is an example configuration:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">ecosystem.config.json</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "apps": [
+    {
+      "name": "qa-studio",
+      "script": "apps/server/dist/server.js",
+      "cwd": "/opt/qa-studio",
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": "3001",
+        "RETENTION_DAYS": "30"
+      },
+      "instances": 1,
+      "autorestart": true,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "log_date_format": "YYYY-MM-DD HH:mm:ss"
+    }
+  ]
+}</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="bash">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code># Start with PM2
+pm2 start ecosystem.config.json
+
+# Save the process list so it restarts after reboot
+pm2 save
+
+# Set up PM2 to start on system boot
+pm2 startup</code></pre>
+          </div>
+
+          <div class="callout info">
+            <div class="callout-title">Info</div>
+            <p>QA Studio uses SQLite, which only supports single-writer access. Do <strong>not</strong> use PM2 cluster mode (multiple instances). Always set <code>instances</code> to <code>1</code>.</p>
+          </div>
+
+          <h2 id="systemd-service">Systemd Service</h2>
+
+          <p>For Linux servers, you can run QA Studio as a systemd service for automatic start on boot:</p>
+
+          <div class="code-block" data-lang="ini">
+            <div class="code-header">
+              <span class="code-lang">/etc/systemd/system/qa-studio.service</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>[Unit]
+Description=QA Studio Test Automation Server
+After=network.target
+
+[Service]
+Type=simple
+User=qa-studio
+WorkingDirectory=/opt/qa-studio
+ExecStart=/usr/bin/node apps/server/dist/server.js
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+Environment=NODE_ENV=production
+Environment=PORT=3001
+Environment=RETENTION_DAYS=30
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+          </div>
+
+          <div class="code-block" data-lang="bash">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code># Reload systemd to pick up the new service file
+sudo systemctl daemon-reload
+
+# Enable the service to start on boot
+sudo systemctl enable qa-studio
+
+# Start the service now
+sudo systemctl start qa-studio
+
+# Check the status
+sudo systemctl status qa-studio
+
+# View logs
+sudo journalctl -u qa-studio -f</code></pre>
+          </div>
+
+          <h2 id="nginx-reverse-proxy">Nginx Reverse Proxy</h2>
+
+          <p>In production, you typically run QA Studio behind a reverse proxy like nginx. This lets you serve the dashboard static files efficiently, terminate SSL, and route traffic to the server.</p>
+
+          <div class="code-block" data-lang="nginx">
+            <div class="code-header">
+              <span class="code-lang">/etc/nginx/sites-available/qa-studio</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>server {
+    listen 80;
+    server_name qa-studio.example.com;
+
+    # Serve the dashboard static files
+    location / {
+        root /opt/qa-studio/apps/dashboard/dist;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy API requests to the Fastify server
+    location /api/ {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # SSE support: disable buffering for streaming responses
+        proxy_buffering off;
+        proxy_cache off;
+
+        # WebSocket support (required for the recorder feature)
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        # Increase timeout for long-running test executions
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+    }
+
+    # Serve data files (screenshots, videos, diffs)
+    location /data/ {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_set_header Host $host;
+    }
+}</code></pre>
+          </div>
+
+          <p>Key configuration details:</p>
+
+          <ul>
+            <li><strong>Static files</strong>: The <code>location /</code> block serves the built dashboard from <code>apps/dashboard/dist</code>. The <code>try_files</code> directive with <code>/index.html</code> fallback ensures client-side routing works correctly.</li>
+            <li><strong>API proxy</strong>: All requests to <code>/api/</code> are forwarded to the Fastify server on port 3001.</li>
+            <li><strong>SSE support</strong>: <code>proxy_buffering off</code> is critical for Server-Sent Events (used for live run progress). Without this, nginx buffers the response and the client does not receive real-time updates.</li>
+            <li><strong>WebSocket support</strong>: The <code>Upgrade</code> and <code>Connection</code> headers are required for the recorder's WebSocket connection. Without these, the recorder feature will not work.</li>
+            <li><strong>Timeout</strong>: Extended to 300 seconds to accommodate long-running test executions.</li>
+          </ul>
+
+          <div class="callout warning">
+            <div class="callout-title">Important: WebSocket Support</div>
+            <p>The recorder feature requires WebSocket connections. Make sure your reverse proxy is configured to pass <code>Upgrade</code> and <code>Connection</code> headers to the backend. Without this, the recorder will fail to establish a connection for streaming captured steps.</p>
+          </div>
+
+          <h3 id="ssl-configuration">SSL with Let's Encrypt</h3>
+
+          <p>For HTTPS, use Certbot to obtain a free SSL certificate:</p>
+
+          <div class="code-block" data-lang="bash">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code># Install Certbot
+sudo apt install certbot python3-certbot-nginx
+
+# Obtain and install certificate (modifies nginx config automatically)
+sudo certbot --nginx -d qa-studio.example.com
+
+# Certbot auto-renews via a systemd timer. Verify:
+sudo systemctl status certbot.timer</code></pre>
+          </div>
+
+          <h2 id="serving-the-dashboard">Serving the Dashboard</h2>
+
+          <p>There are two approaches to serving the dashboard frontend:</p>
+
+          <h3 id="option-1-nginx">Option 1: Nginx (Recommended)</h3>
+
+          <p>Serve the static files directly from nginx as shown in the configuration above. This is more efficient because nginx is optimized for static file serving and can handle gzip compression, caching headers, and high concurrency.</p>
+
+          <h3 id="option-2-fastify">Option 2: Fastify Static Plugin</h3>
+
+          <p>The Fastify server already serves the <code>data/</code> directory as static files using <code>@fastify/static</code>. You could configure it to also serve the dashboard's <code>dist/</code> directory. However, using nginx for static files is generally preferred for production deployments.</p>
+
+          <h2 id="deployment-checklist">Deployment Checklist</h2>
+
+          <p>Before going live, verify the following:</p>
+
+          <ul>
+            <li>Node.js 20+ is installed: <code>node --version</code></li>
+            <li>All dependencies installed: <code>pnpm install</code></li>
+            <li>Playwright browsers installed: <code>pnpm setup</code></li>
+            <li>Production build completed: <code>pnpm build</code></li>
+            <li><code>NODE_ENV=production</code> is set</li>
+            <li><code>PORT</code> is configured (default: 3001)</li>
+            <li><code>RETENTION_DAYS</code> is set appropriately</li>
+            <li>The <code>data/</code> directory is on persistent storage</li>
+            <li>A backup strategy is in place for <code>data/qa-studio.db</code></li>
+            <li>Process manager (PM2 or systemd) is configured for auto-restart</li>
+            <li>Reverse proxy is configured with SSE and WebSocket support</li>
+            <li>Health check endpoint is reachable: <code>curl http://localhost:3001/api/health</code></li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Issue</th>
+                <th>Solution</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Server won't start</td>
+                <td>Check Node.js version (<code>node --version</code>, must be 20+). Check logs with <code>journalctl -u qa-studio</code> or PM2 logs.</td>
+              </tr>
+              <tr>
+                <td>Tests fail to run (browser errors)</td>
+                <td>Ensure Playwright browsers are installed: <code>npx playwright install</code>. On Linux, install system dependencies: <code>npx playwright install-deps</code>.</td>
+              </tr>
+              <tr>
+                <td>Recorder WebSocket not connecting</td>
+                <td>Verify nginx passes <code>Upgrade</code> and <code>Connection</code> headers. Check that <code>@fastify/websocket</code> is registered.</td>
+              </tr>
+              <tr>
+                <td>Live run progress not streaming</td>
+                <td>Ensure <code>proxy_buffering off</code> is set in nginx for the <code>/api/</code> location block.</td>
+              </tr>
+              <tr>
+                <td>Database locked errors</td>
+                <td>Ensure only one server instance is running. Do not use PM2 cluster mode.</td>
+              </tr>
+              <tr>
+                <td>Disk space growing</td>
+                <td>Check <code>RETENTION_DAYS</code> value. Trigger manual cleanup: <code>curl -X POST http://localhost:3001/api/admin/cleanup</code>.</td>
+              </tr>
+              <tr>
+                <td>Dashboard shows blank page</td>
+                <td>Verify <code>apps/dashboard/dist/</code> exists and nginx <code>try_files</code> falls back to <code>/index.html</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="page-nav">
+            <a href="api-reference.html">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; API Reference</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

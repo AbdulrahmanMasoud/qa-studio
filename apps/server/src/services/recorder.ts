@@ -205,17 +205,30 @@ export async function startRecording(testId: string, startUrl: string): Promise<
     }
   });
 
-  // Capture navigation events
+  // Capture navigation events (deduplicated)
+  let lastNavUrl = '';
+  let navDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
   page.on('framenavigated', (frame) => {
     if (frame === page.mainFrame()) {
       const url = frame.url();
-      if (url && url !== 'about:blank') {
+      if (!url || url === 'about:blank') return;
+
+      // Strip query params for dedup comparison (catches Cloudflare challenge tokens)
+      const urlBase = url.split('?')[0];
+      if (urlBase === lastNavUrl.split('?')[0]) return;
+
+      // Debounce rapid redirects (e.g. Cloudflare challenge → redirect → final page)
+      if (navDebounceTimer) clearTimeout(navDebounceTimer);
+      navDebounceTimer = setTimeout(() => {
+        lastNavUrl = url;
         emitter.emit('step', {
           id: generateId(),
           action: 'goto',
           url,
         } as TestStep);
-      }
+        navDebounceTimer = null;
+      }, 500);
     }
   });
 
@@ -238,7 +251,10 @@ export async function startRecording(testId: string, startUrl: string): Promise<
 
   // Navigate to start URL
   if (startUrl) {
+    lastNavUrl = startUrl;
     await page.goto(startUrl);
+    // Update lastNavUrl to the final URL after any redirects
+    lastNavUrl = page.url();
     // Inject script after initial navigation
     await page.evaluate(CAPTURE_SCRIPT);
   }

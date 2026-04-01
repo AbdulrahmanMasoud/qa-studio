@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export &amp; Import - QA Studio Docs</title>
+  <meta name="description" content="Export and import tests, flows, and entire projects as portable JSON files for backup, sharing, and migration between QA Studio instances.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Export &amp; Import</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Export &amp; Import</h1>
+          <p class="subtitle">Move tests and entire projects between QA Studio instances with portable JSON exports. Back up your test definitions, share them with your team, or migrate between environments.</p>
+
+          <h2 id="overview">Overview</h2>
+
+          <p>QA Studio supports exporting and importing test definitions as structured JSON files. You can export a single test or an entire project (including all tests and reusable flows). The export format is self-contained and includes everything needed to recreate the tests in another project or QA Studio instance.</p>
+
+          <div class="callout info">
+            <div class="callout-title">Info</div>
+            <p>Exports include everything needed to recreate tests &mdash; steps, configuration, and flow definitions. Run history, screenshots, videos, and visual regression baselines are <strong>not</strong> included in exports. These are runtime artifacts tied to specific executions.</p>
+          </div>
+
+          <h2 id="exporting-a-single-test">Exporting a Single Test</h2>
+
+          <p>To export a single test, use the test export endpoint:</p>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/tests/:id/export</code></pre>
+          </div>
+
+          <p>This returns a JSON document containing the test's name, description, configuration, and all steps:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Single Test Export</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "version": 1,
+  "type": "test",
+  "exportedAt": "2026-02-20T14:30:00.000Z",
+  "test": {
+    "name": "Login Flow",
+    "description": "Verifies user can log in with valid credentials",
+    "config": {
+      "browser": "chromium",
+      "viewport": { "width": 1280, "height": 720 },
+      "timeout": 30000,
+      "headless": true,
+      "useRealChrome": false
+    },
+    "steps": [
+      { "id": "step_1", "action": "goto", "url": "{{BASE_URL}}/login" },
+      { "id": "step_2", "action": "fill", "selector": "#email", "value": "{{USER_EMAIL}}" },
+      { "id": "step_3", "action": "fill", "selector": "#password", "value": "{{USER_PASSWORD}}" },
+      { "id": "step_4", "action": "click", "selector": "button[type=submit]" },
+      { "id": "step_5", "action": "assert", "assertType": "url", "condition": "contains", "value": "/dashboard" }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <p>From the dashboard UI, you can export a test by clicking the <strong>export button</strong> on the test list. The browser will download the JSON file, which you can then import into any project.</p>
+
+          <h2 id="exporting-a-project">Exporting a Project</h2>
+
+          <p>To export an entire project with all its tests and reusable flows, use the project export endpoint:</p>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects/:id/export</code></pre>
+          </div>
+
+          <p>This returns a comprehensive JSON document containing the project metadata, all tests, and all flows:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Project Export</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "version": 1,
+  "type": "project",
+  "exportedAt": "2026-02-20T14:30:00.000Z",
+  "project": {
+    "name": "My E-Commerce App",
+    "baseUrl": "https://staging.example.com",
+    "variables": {
+      "ADMIN_EMAIL": "admin@example.com",
+      "API_KEY": "sk_test_abc123"
+    }
+  },
+  "tests": [
+    {
+      "name": "Homepage Load",
+      "description": "Verify homepage loads correctly",
+      "config": { "browser": "chromium", "viewport": { "width": 1280, "height": 720 }, "timeout": 30000, "headless": true },
+      "steps": [
+        { "id": "step_1", "action": "goto", "url": "{{BASE_URL}}" },
+        { "id": "step_2", "action": "assert", "assertType": "title", "condition": "contains", "value": "Welcome" }
+      ]
+    },
+    {
+      "name": "Checkout Flow",
+      "description": "Complete purchase flow",
+      "config": { "browser": "chromium", "viewport": { "width": 1280, "height": 720 }, "timeout": 60000, "headless": true },
+      "steps": [
+        { "id": "step_1", "action": "use-flow", "flowName": "Login Steps", "flowId": "flow_abc" },
+        { "id": "step_2", "action": "click", "selector": ".add-to-cart" },
+        { "id": "step_3", "action": "click", "selector": ".checkout-btn" }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "name": "Login Steps",
+      "description": "Reusable login sequence",
+      "steps": [
+        { "id": "fs_1", "action": "goto", "url": "{{BASE_URL}}/login" },
+        { "id": "fs_2", "action": "fill", "selector": "#email", "value": "{{ADMIN_EMAIL}}" },
+        { "id": "fs_3", "action": "click", "selector": "button[type=submit]" }
+      ]
+    }
+  ]
+}</code></pre>
+          </div>
+
+          <h2 id="json-format-specification">JSON Format Specification</h2>
+
+          <p>Both export types share a common envelope format:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>version</code></td>
+                <td>number</td>
+                <td>Format version. Currently always <code>1</code>.</td>
+              </tr>
+              <tr>
+                <td><code>type</code></td>
+                <td><code>"test"</code> | <code>"project"</code></td>
+                <td>Indicates whether this is a single test or project export.</td>
+              </tr>
+              <tr>
+                <td><code>exportedAt</code></td>
+                <td>string (ISO timestamp)</td>
+                <td>When the export was generated.</td>
+              </tr>
+              <tr>
+                <td><code>test</code></td>
+                <td>object</td>
+                <td>Present only in single test exports. Contains name, description, config, and steps.</td>
+              </tr>
+              <tr>
+                <td><code>project</code></td>
+                <td>object</td>
+                <td>Present only in project exports. Contains name, baseUrl, and variables.</td>
+              </tr>
+              <tr>
+                <td><code>tests</code></td>
+                <td>array</td>
+                <td>Present only in project exports. Array of test objects (name, description, config, steps).</td>
+              </tr>
+              <tr>
+                <td><code>flows</code></td>
+                <td>array</td>
+                <td>Present only in project exports. Array of flow objects (name, description, steps).</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>Note that exported data does <strong>not</strong> include internal IDs. Tests and flows are identified by name in the export format, and new IDs are generated during import.</p>
+
+          <h2 id="importing-into-a-project">Importing Into a Project</h2>
+
+          <p>To import tests and flows into an existing project, send the export JSON to the import endpoint:</p>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/projects/:id/import
+Content-Type: application/json
+
+{
+  "version": 1,
+  "type": "test",
+  "test": { ... }
+}</code></pre>
+          </div>
+
+          <p>The import endpoint accepts both single test exports (<code>type: "test"</code>) and project exports (<code>type: "project"</code>). In both cases, new records are created in the target project:</p>
+
+          <ul>
+            <li>Each test and flow receives a <strong>new unique ID</strong>.</li>
+            <li>Each step within tests and flows also receives a <strong>new unique ID</strong>.</li>
+            <li>The imported items are added to the target project &mdash; existing tests and flows in the project are not modified.</li>
+            <li>Test configurations are merged with the default config, so any missing fields receive default values.</li>
+          </ul>
+
+          <p>The response confirms how many items were imported:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Import Response</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "success": true,
+  "importedTests": 5,
+  "importedFlows": 2
+}</code></pre>
+          </div>
+
+          <h2 id="flow-id-remapping">Flow ID Remapping</h2>
+
+          <p>When importing a project export that contains both tests and flows, QA Studio automatically handles flow reference remapping. This is critical because the exported flow IDs are meaningless in the target project &mdash; new IDs must be generated.</p>
+
+          <p>The remapping process works as follows:</p>
+
+          <div class="steps">
+            <div class="step">
+              <h4>Flows Are Imported First</h4>
+              <p>All flows from the export are created in the database first. As each flow is created with a new ID, a mapping from <strong>flow name to new ID</strong> is stored.</p>
+            </div>
+
+            <div class="step">
+              <h4>Test Steps Are Remapped</h4>
+              <p>When tests are imported, each step is inspected. Any step with <code>action: "use-flow"</code> that has a <code>flowName</code> matching an imported flow will have its <code>flowId</code> updated to the newly generated ID.</p>
+            </div>
+
+            <div class="step">
+              <h4>References Are Resolved by Name</h4>
+              <p>The remapping uses flow names as the linking mechanism. This is why flow names should be unique within a project &mdash; the import process matches <code>use-flow</code> steps to flows by their <code>flowName</code> property.</p>
+            </div>
+          </div>
+
+          <div class="callout tip">
+            <div class="callout-title">Tip</div>
+            <p>Use export and import to share tests between projects, create backups of your test definitions before making major changes, or migrate tests between different QA Studio instances (e.g., from development to production). Since run history is not exported, you get a clean set of test definitions without any historical baggage.</p>
+          </div>
+
+          <h2 id="use-cases">Common Use Cases</h2>
+
+          <ul>
+            <li><strong>Backup</strong> &mdash; Regularly export your project to keep a JSON backup of all test definitions. Store these files in version control alongside your application code.</li>
+            <li><strong>Sharing</strong> &mdash; Export a test or project and share the JSON file with team members. They can import it into their own QA Studio instance.</li>
+            <li><strong>Templating</strong> &mdash; Create a project with common test patterns (login flows, navigation checks), export it, and import it as a starting point for new projects.</li>
+            <li><strong>Migration</strong> &mdash; When setting up a new QA Studio server, export all projects from the old server and import them into the new one.</li>
+            <li><strong>Cross-environment testing</strong> &mdash; Export tests that use <a href="environment-variables.html">environment variables</a> for URLs and credentials. Import them into projects with different variable values to test staging vs. production.</li>
+          </ul>
+
+          <h2 id="limitations">Limitations</h2>
+
+          <ul>
+            <li><strong>No run history</strong> &mdash; Export files do not include run records, screenshots, videos, or visual regression baselines.</li>
+            <li><strong>No suite definitions</strong> &mdash; Test suites are not included in project exports. You will need to recreate suite groupings after import.</li>
+            <li><strong>No schedule definitions</strong> &mdash; Scheduled runs are not exported. Recreate schedules in the target project after import.</li>
+            <li><strong>Environment variables in project export</strong> &mdash; Project exports include the <code>variables</code> field from the project metadata. Be mindful of sensitive values (passwords, API keys) when sharing export files.</li>
+          </ul>
+
+          <div class="page-nav">
+            <a href="scheduled-runs.html">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Scheduled Runs</span>
+            </a>
+            <a href="actions-reference.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Actions Reference &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

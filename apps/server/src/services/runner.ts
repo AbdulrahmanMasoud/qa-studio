@@ -298,8 +298,19 @@ function findMatchingEndLoop(steps: TestStep[], loopIndex: number): number {
   return steps.length;
 }
 
+// Resolve a URL against a base URL if it's relative
+function resolveUrl(url: string, baseUrl?: string): string {
+  if (!baseUrl) return url;
+  // Already absolute
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  // Relative URL — prepend baseUrl
+  const base = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const path = url.startsWith('/') ? url : `/${url}`;
+  return `${base}${path}`;
+}
+
 // Main test runner function
-export async function runTest(test: TestDefinition, onProgress?: (run: Partial<TestRun>) => void, variables?: Record<string, string>, flowResolver?: FlowResolver): Promise<TestRun> {
+export async function runTest(test: TestDefinition, onProgress?: (run: Partial<TestRun>) => void, variables?: Record<string, string>, flowResolver?: FlowResolver, baseUrl?: string): Promise<TestRun> {
   const runId = generateId();
   const startTime = Date.now();
   
@@ -464,7 +475,10 @@ export async function runTest(test: TestDefinition, onProgress?: (run: Partial<T
               stepResults.push({ stepId: bodyStep.id, status: 'skipped', durationMs: 0 });
               continue;
             }
-            const resolvedStep = variables ? substituteStepVariables(bodyStep, variables) : bodyStep;
+            let resolvedStep = variables ? substituteStepVariables(bodyStep, variables) : bodyStep;
+            if (resolvedStep.action === 'goto' && baseUrl) {
+              resolvedStep = { ...resolvedStep, url: resolveUrl(resolvedStep.url, baseUrl) };
+            }
             const result = await executeStep(page, resolvedStep, test.config);
             stepResults.push(result);
 
@@ -496,7 +510,11 @@ export async function runTest(test: TestDefinition, onProgress?: (run: Partial<T
       }
 
       // Regular step execution
-      const resolvedStep = variables ? substituteStepVariables(step, variables) : step;
+      let resolvedStep = variables ? substituteStepVariables(step, variables) : step;
+      // Resolve relative goto URLs against project baseUrl
+      if (resolvedStep.action === 'goto' && baseUrl) {
+        resolvedStep = { ...resolvedStep, url: resolveUrl(resolvedStep.url, baseUrl) };
+      }
       const result = await executeStep(page, resolvedStep, test.config);
       stepResults.push(result);
 

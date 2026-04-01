@@ -19,6 +19,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { flowsApi } from '../lib/api';
 import { TestStep, ActionType, createEmptyStep } from '@qa-studio/shared';
 import SortableStep from '../components/SortableStep';
@@ -57,6 +58,7 @@ export default function FlowEditorPage() {
     onSuccess: () => {
       setHasChanges(false);
       queryClient.invalidateQueries({ queryKey: ['flow', flowId] });
+      toast.success('Flow saved');
     },
   });
 

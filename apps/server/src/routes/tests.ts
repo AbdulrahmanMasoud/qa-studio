@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { db } from '../db/index.js';
 import { tests, projects, runs } from '../db/schema.js';
 import { eq, desc } from 'drizzle-orm';
+import { safeSSEWrite, safeSSEEnd } from '../utils/sse.js';
 import { generateId, defaultTestConfig, TestStep, TestConfig } from '@qa-studio/shared';
 import { runTest, createFlowResolver } from '../services/runner.js';
 
@@ -203,9 +204,10 @@ export async function testRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'Test not found' });
     }
 
-    // Fetch project variables
+    // Fetch project variables and baseUrl
     const project = await db.select().from(projects).where(eq(projects.id, test.projectId)).get();
     const variables = (project?.variables as Record<string, string>) || undefined;
+    const baseUrl = (project?.baseUrl as string) || undefined;
 
     // Run the test
     const testDef = {
@@ -224,7 +226,7 @@ export async function testRoutes(app: FastifyInstance) {
 
     if (!wantsStream) {
       // Legacy: return full result at once
-      const result = await runTest(testDef, undefined, variables);
+      const result = await runTest(testDef, undefined, variables, undefined, baseUrl);
       return result;
     }
 
@@ -239,12 +241,12 @@ export async function testRoutes(app: FastifyInstance) {
       const latest = progress.stepResults;
       if (latest && latest.length > 0) {
         const lastResult = latest[latest.length - 1];
-        reply.raw.write(`data: ${JSON.stringify({ type: 'step-result', stepResult: lastResult, stepIndex: latest.length - 1 })}\n\n`);
+        safeSSEWrite(reply.raw, { type: 'step-result', stepResult: lastResult, stepIndex: latest.length - 1 });
       }
-    }, variables);
+    }, variables, undefined, baseUrl);
 
-    reply.raw.write(`data: ${JSON.stringify({ type: 'complete', run: result })}\n\n`);
-    reply.raw.end();
+    safeSSEWrite(reply.raw, { type: 'complete', run: result });
+    safeSSEEnd(reply.raw);
     return reply;
   });
 

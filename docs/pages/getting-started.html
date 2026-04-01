@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started - QA Studio Docs</title>
+  <meta name="description" content="Install QA Studio, run the dev server, and create your first automated browser test in minutes.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Getting Started</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Getting Started</h1>
+          <p class="subtitle">Install QA Studio, start the development server, and create your first automated browser test in under five minutes.</p>
+
+          <h2 id="prerequisites">Prerequisites</h2>
+
+          <p>Before installing QA Studio, make sure your system meets the following requirements:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Requirement</th>
+                <th>Version</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Node.js</strong></td>
+                <td>20 or higher</td>
+                <td>Required. LTS version recommended.</td>
+              </tr>
+              <tr>
+                <td><strong>pnpm</strong></td>
+                <td>8 or higher</td>
+                <td>Required. Used for workspace management.</td>
+              </tr>
+              <tr>
+                <td><strong>Google Chrome</strong></td>
+                <td>Latest stable</td>
+                <td>Optional. Needed only for Real Browser mode.</td>
+              </tr>
+              <tr>
+                <td><strong>Operating System</strong></td>
+                <td>macOS, Linux, Windows</td>
+                <td>Any OS that supports Node.js and Playwright.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>If you do not have pnpm installed, you can install it globally via npm:</p>
+
+          <div class="code-block" data-lang="bash">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>npm install -g pnpm</code></pre>
+          </div>
+
+          <h2 id="installation">Installation</h2>
+
+          <p>Clone the repository and install all dependencies with a single command. QA Studio is a monorepo managed by pnpm workspaces, so all three packages (server, dashboard, and shared types) are installed together.</p>
+
+          <div class="code-block" data-lang="bash">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>git clone &lt;repo-url&gt;
+cd qa-studio
+pnpm install</code></pre>
+          </div>
+
+          <p>This installs dependencies for all three packages:</p>
+
+          <ul>
+            <li><strong>apps/server</strong> &mdash; Fastify API server with Playwright, SQLite (Drizzle ORM), and Zod validation</li>
+            <li><strong>apps/dashboard</strong> &mdash; React 18 frontend with Vite, TanStack Query, dnd-kit, and Tailwind CSS</li>
+            <li><strong>packages/shared</strong> &mdash; TypeScript-only types package (<code>@qa-studio/shared</code>)</li>
+          </ul>
+
+          <p>Next, run the setup script to install Playwright browsers and initialize the SQLite database:</p>
+
+          <div class="code-block" data-lang="bash">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>pnpm setup</code></pre>
+          </div>
+
+          <p>This command downloads Chromium, Firefox, and WebKit browser binaries that Playwright uses for test execution. The SQLite database is created automatically on first server start.</p>
+
+          <h2 id="running-the-dev-server">Running the Dev Server</h2>
+
+          <p>Start both the API server and the dashboard in development mode with a single command:</p>
+
+          <div class="code-block" data-lang="bash">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>pnpm dev</code></pre>
+          </div>
+
+          <p>This starts both services concurrently. Here are the default URLs:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>URL</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Dashboard</strong></td>
+                <td><code>http://localhost:5173</code></td>
+                <td>React frontend with visual test builder, recorder, and analytics</td>
+              </tr>
+              <tr>
+                <td><strong>API Server</strong></td>
+                <td><code>http://localhost:3001</code></td>
+                <td>Fastify REST API with SSE streaming for live run progress</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>Open <code>http://localhost:5173</code> in your browser to access the QA Studio dashboard.</p>
+
+          <div class="callout info">
+            <div class="callout-title">Info</div>
+            <p>The SQLite database file is created automatically in the server directory on first startup. No additional database setup is required.</p>
+          </div>
+
+          <h2 id="your-first-test">Your First Test</h2>
+
+          <p>Follow these steps to create and run your first automated browser test:</p>
+
+          <div class="steps">
+            <div class="step">
+              <h4>Create a Project</h4>
+              <p>From the dashboard home screen, click <strong>New Project</strong>. Enter a name (e.g., "My Website") and an optional base URL. The base URL is used as the default starting point for all tests in this project.</p>
+            </div>
+
+            <div class="step">
+              <h4>Create a Test</h4>
+              <p>Inside your project, click <strong>New Test</strong>. Give it a descriptive name like "Homepage Load Test" or "Login Flow". This opens the <a href="test-builder.html">Test Builder</a> where you will define your test steps.</p>
+            </div>
+
+            <div class="step">
+              <h4>Add Steps</h4>
+              <p>Use the <strong>Action Palette</strong> on the left panel to add steps to your test. For a basic navigation test, start with these steps:</p>
+              <div class="code-block" data-lang="json">
+                <div class="code-header">
+                  <span class="code-lang">Example Steps</span>
+                  <button class="copy-btn">Copy</button>
+                </div>
+                <pre><code>{
+  "steps": [
+    { "action": "goto", "url": "https://example.com" },
+    { "action": "assert", "assertType": "title", "condition": "contains", "value": "Example" },
+    { "action": "click", "selector": "a", "selectorMode": "css" },
+    { "action": "screenshot", "name": "after-click", "fullPage": true }
+  ]
+}</code></pre>
+              </div>
+              <p>Each step is a card in the center panel. Click on any step card to edit its properties in the right panel.</p>
+            </div>
+
+            <div class="step">
+              <h4>Run the Test</h4>
+              <p>Click the <strong>Run</strong> button in the top toolbar. QA Studio automatically saves your test before execution. The test runs in a headless Playwright browser by default, and you can watch each step execute in real-time thanks to SSE streaming.</p>
+              <p>Each step card updates with a status indicator as it executes:</p>
+              <ul>
+                <li><strong>Running</strong> &mdash; Blue spinner, step is currently executing</li>
+                <li><strong>Passed</strong> &mdash; Green checkmark, step completed successfully</li>
+                <li><strong>Failed</strong> &mdash; Red X, step encountered an error</li>
+                <li><strong>Skipped</strong> &mdash; Gray dash, step was skipped (e.g., inside a false conditional branch)</li>
+              </ul>
+            </div>
+
+            <div class="step">
+              <h4>View Results</h4>
+              <p>After the run completes, you can view the full results including:</p>
+              <ul>
+                <li>Overall pass/fail status and execution duration</li>
+                <li>Per-step results with error messages and screenshots</li>
+                <li>Console logs captured during execution</li>
+                <li>Visual regression diffs (if screenshot steps were included)</li>
+              </ul>
+              <p>Results are stored in the SQLite database and accessible from the test's run history.</p>
+            </div>
+          </div>
+
+          <div class="callout tip">
+            <div class="callout-title">Tip: Real Browser Mode</div>
+            <p>If your target website has bot detection or requires specific browser features, enable <strong>Real Browser</strong> mode in the test configuration. This launches a real Google Chrome instance instead of Playwright's bundled Chromium, which can bypass many anti-bot measures. You must have Chrome installed on your machine for this to work.</p>
+          </div>
+
+          <div class="callout info">
+            <div class="callout-title">Info: Recording Shortcut</div>
+            <p>Instead of manually adding steps, you can use the <strong>Recorder</strong> to capture browser interactions automatically. Click the record button in the test builder toolbar, enter a starting URL, and interact with the page. QA Studio captures your clicks, text inputs, selections, and navigations as test steps in real-time. See the <a href="recording.html">Recording</a> page for details.</p>
+          </div>
+
+          <h2 id="project-structure">Project Structure</h2>
+
+          <p>Understanding the monorepo layout helps when you want to customize or extend QA Studio:</p>
+
+          <div class="code-block" data-lang="bash">
+            <div class="code-header">
+              <span class="code-lang">Project Layout</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>qa-studio/
+├── apps/
+│   ├── server/           # Fastify API + Playwright runner
+│   │   ├── src/
+│   │   │   ├── db/       # SQLite schema, migrations, queries
+│   │   │   ├── routes/   # REST API route handlers
+│   │   │   ├── runner/   # Test execution engine
+│   │   │   └── server.ts # Server entry point
+│   │   └── package.json
+│   └── dashboard/        # React frontend
+│       ├── src/
+│       │   ├── components/  # Reusable UI components
+│       │   ├── pages/       # Route-level page components
+│       │   └── lib/         # API client, utilities
+│       └── package.json
+├── packages/
+│   └── shared/           # TypeScript types (@qa-studio/shared)
+├── pnpm-workspace.yaml
+└── package.json</code></pre>
+          </div>
+
+          <h2 id="next-steps">Next Steps</h2>
+
+          <p>Now that you have QA Studio running and have created your first test, explore the rest of the documentation to unlock the full power of the platform:</p>
+
+          <ul>
+            <li><a href="test-builder.html"><strong>Test Builder</strong></a> &mdash; Learn the 3-panel interface, drag-and-drop, and step editing in depth</li>
+            <li><a href="recording.html"><strong>Recording</strong></a> &mdash; Capture browser interactions automatically with intelligent selector generation</li>
+            <li><a href="actions-reference.html"><strong>Actions Reference</strong></a> &mdash; Explore all 17 available step actions and their configuration fields</li>
+            <li><a href="environment-variables.html"><strong>Environment Variables</strong></a> &mdash; Use <code>{{variables}}</code> for dynamic values across your tests</li>
+            <li><a href="test-suites.html"><strong>Test Suites</strong></a> &mdash; Group tests and run them in parallel with configurable concurrency</li>
+          </ul>
+
+          <div class="page-nav">
+            <a href="../index.html">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Home</span>
+            </a>
+            <a href="test-builder.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Test Builder &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

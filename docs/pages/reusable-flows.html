@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reusable Flows - QA Studio Docs</title>
+  <meta name="description" content="Create shared step sequences with Reusable Flows and reference them across multiple tests to keep your test suite DRY and maintainable.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link active">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Reusable Flows</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Reusable Flows</h1>
+          <p class="subtitle">Create shared step sequences and reference them across multiple tests. Flows help you keep your test suite DRY and simplify maintenance of common workflows.</p>
+
+          <h2 id="what-are-flows">What Are Flows?</h2>
+          <p>A <strong>flow</strong> is a named, reusable sequence of test steps that can be referenced from any test within the same project. Think of flows as functions for your tests &mdash; you define the steps once and call them wherever needed.</p>
+          <p>Common examples of flows include:</p>
+          <ul>
+            <li><strong>Login flow</strong> &mdash; navigate to login page, fill in credentials, click submit, wait for dashboard</li>
+            <li><strong>Navigation flow</strong> &mdash; open the sidebar, click a specific menu item, wait for the page to load</li>
+            <li><strong>Form filling flow</strong> &mdash; fill out a multi-field form with standard test data</li>
+            <li><strong>Cleanup flow</strong> &mdash; delete test records, log out, or reset application state</li>
+          </ul>
+
+          <h2 id="why-use-flows">Why Use Flows?</h2>
+          <p>Without flows, you end up duplicating the same steps across many tests. This creates several problems:</p>
+          <ul>
+            <li><strong>Duplication</strong> &mdash; the same login steps repeated in every test that requires authentication</li>
+            <li><strong>Maintenance burden</strong> &mdash; when the login form changes, you have to update every test individually</li>
+            <li><strong>Inconsistency</strong> &mdash; copied steps can drift apart as different tests get updated at different times</li>
+          </ul>
+          <p>Flows solve all of these issues. When you extract common steps into a flow:</p>
+          <ul>
+            <li><strong>Single source of truth</strong> &mdash; the steps are defined in one place</li>
+            <li><strong>Update once, fix everywhere</strong> &mdash; changing the flow automatically updates every test that uses it</li>
+            <li><strong>Cleaner tests</strong> &mdash; your tests become shorter and more focused on what they actually verify</li>
+          </ul>
+
+          <h2 id="creating-a-flow">Creating a Flow</h2>
+          <p>Flows are managed from the dedicated <strong>Flows</strong> page within your project.</p>
+
+          <div class="steps">
+            <div class="step">
+              <h4>Navigate to Flows</h4>
+              <p>Open your project and click the <strong>Flows</strong> tab in the project navigation. This takes you to the flows list, which shows all flows defined in the current project.</p>
+            </div>
+
+            <div class="step">
+              <h4>Create a New Flow</h4>
+              <p>Click the <strong>New Flow</strong> button. You will be prompted to enter a name for your flow. Choose a descriptive name that indicates what the flow does, such as "Login as Admin" or "Navigate to Settings".</p>
+            </div>
+
+            <div class="step">
+              <h4>Add Steps</h4>
+              <p>The flow editor opens with the same drag-and-drop interface as the test builder. Add steps by selecting actions from the action palette, configure each step's fields (selectors, values, timeouts), and arrange them by dragging to reorder.</p>
+            </div>
+
+            <div class="step">
+              <h4>Save the Flow</h4>
+              <p>Click <strong>Save</strong> to persist your flow. The flow is now available for use in any test within this project.</p>
+            </div>
+          </div>
+
+          <h2 id="flow-editor">The Flow Editor</h2>
+          <p>The flow editor provides the same step-building interface as the test builder. You get access to all the same actions &mdash; Navigate, Click, Fill, Assert, Wait, Screenshot, and more &mdash; with one key difference:</p>
+
+          <div class="callout info">
+            <div class="callout-title">Flow Editor Restriction</div>
+            <p>The flow editor <strong>excludes the "Use Flow" action</strong> from the action palette. This prevents you from accidentally creating a flow that directly references itself, which would cause infinite recursion during test execution.</p>
+          </div>
+
+          <p>In the flow editor you can:</p>
+          <ul>
+            <li><strong>Drag and drop</strong> steps to reorder them</li>
+            <li><strong>Edit</strong> any step's configuration (selector, value, description, etc.)</li>
+            <li><strong>Delete</strong> individual steps</li>
+            <li><strong>Add steps</strong> from the full action palette (minus "Use Flow")</li>
+          </ul>
+          <p>The editor works identically to the test builder's step panel, so if you are familiar with building tests, you already know how to build flows.</p>
+
+          <h2 id="using-a-flow-in-a-test">Using a Flow in a Test</h2>
+          <p>Once a flow is created, you can reference it from any test in the same project using the <strong>Use Flow</strong> action.</p>
+
+          <div class="steps">
+            <div class="step">
+              <h4>Open a Test</h4>
+              <p>Navigate to the test where you want to use the flow and open it in the test builder.</p>
+            </div>
+
+            <div class="step">
+              <h4>Add a "Use Flow" Step</h4>
+              <p>In the action palette, select the <strong>Use Flow</strong> action. This inserts a new step into your test at the current position.</p>
+            </div>
+
+            <div class="step">
+              <h4>Select the Flow</h4>
+              <p>A dropdown appears listing all flows available in the current project. Select the flow you want to reference. The step displays the flow name so you can easily identify which flow will be executed.</p>
+            </div>
+
+            <div class="step">
+              <h4>Run the Test</h4>
+              <p>When the test runs, the runner encounters the "Use Flow" step and resolves it by fetching the flow's steps and executing them inline. The flow's steps run in sequence as if they were part of the test itself.</p>
+            </div>
+          </div>
+
+          <h3 id="example-login-flow">Example: Login Flow</h3>
+          <p>Suppose you create a flow named <strong>"Login as Admin"</strong> with these steps:</p>
+          <ol>
+            <li>Navigate to <code>{{baseUrl}}/login</code></li>
+            <li>Fill <code>#email</code> with <code>{{adminEmail}}</code></li>
+            <li>Fill <code>#password</code> with <code>{{adminPassword}}</code></li>
+            <li>Click <code>button[type="submit"]</code></li>
+            <li>Wait for selector <code>.dashboard</code></li>
+          </ol>
+          <p>Now in any test that requires authentication, you simply add a single "Use Flow" step pointing to "Login as Admin" instead of repeating all five steps. If the login form changes &mdash; say the email field becomes <code>#username</code> &mdash; you update the flow once and every test is fixed.</p>
+
+          <h2 id="nesting-flows">Nesting Flows</h2>
+          <p>Flows can reference other flows through nesting. While the flow editor itself does not include the "Use Flow" action (to prevent self-referencing), a flow's steps are resolved at runtime, and a flow used in a test can call another flow that itself contains "Use Flow" steps pointing to yet another flow.</p>
+
+          <h3 id="nesting-example">Nesting Example</h3>
+          <p>Consider this structure:</p>
+          <ul>
+            <li><strong>Flow: "Setup Session"</strong> &mdash; sets cookies, configures viewport</li>
+            <li><strong>Flow: "Login as Admin"</strong> &mdash; navigates to login, fills credentials, submits</li>
+            <li><strong>Test: "Verify Dashboard"</strong> &mdash; uses "Setup Session" flow, then uses "Login as Admin" flow, then asserts dashboard content</li>
+          </ul>
+          <p>At runtime, the test runner recursively resolves all "Use Flow" steps, expanding each flow's steps inline before execution begins.</p>
+
+          <h3 id="depth-limit">Depth Limit</h3>
+          <p>To prevent infinite recursion from circular references, QA Studio enforces a <strong>maximum nesting depth of 10</strong>. If flow resolution exceeds 10 levels of nesting, the runner stops resolution and reports an error.</p>
+
+          <div class="callout warning">
+            <div class="callout-title">Circular Reference Protection</div>
+            <p>If Flow A references Flow B, and Flow B references Flow A (directly or through a chain), the runner will detect this when the nesting depth exceeds 10 and fail with a clear error message. Keep your flow hierarchy straightforward to avoid hitting this limit.</p>
+          </div>
+
+          <h2 id="flow-management">Flow Management</h2>
+          <p>All flow management is done from the <strong>Flows</strong> page within your project.</p>
+
+          <h3 id="editing-a-flow">Editing a Flow</h3>
+          <p>Click on any flow in the flows list to open it in the flow editor. Make your changes to the steps, then click <strong>Save</strong>. The updated steps will take effect the next time any test that references this flow is run.</p>
+
+          <h3 id="deleting-a-flow">Deleting a Flow</h3>
+          <p>To delete a flow, click the delete button next to it in the flows list. Be aware that deleting a flow that is referenced by tests will cause those tests to fail when they encounter the "Use Flow" step, since the referenced flow no longer exists.</p>
+
+          <div class="callout info">
+            <div class="callout-title">Project Scope</div>
+            <p>Flows belong to a project and are available to all tests within that project. They are not shared across projects. If you need the same flow in multiple projects, you will need to recreate it in each project or use the <a href="export-import.html">Export &amp; Import</a> feature to transfer flows between projects.</p>
+          </div>
+
+          <h2 id="best-practices">Best Practices</h2>
+
+          <div class="callout tip">
+            <div class="callout-title">Recommended Uses for Flows</div>
+            <p>Create flows for step sequences that appear in multiple tests. The most common and effective uses include:</p>
+          </div>
+
+          <ul>
+            <li><strong>Login / Authentication</strong> &mdash; the most common flow. Almost every test needs to log in first, and login forms are a frequent source of selector changes.</li>
+            <li><strong>Navigation sequences</strong> &mdash; multi-step navigation through menus, sidebars, or breadcrumbs to reach a specific page.</li>
+            <li><strong>Form filling</strong> &mdash; standardized data entry for forms that appear across multiple features (user creation, product setup, etc.).</li>
+            <li><strong>Cleanup sequences</strong> &mdash; steps to reset state after a test, such as deleting created records, logging out, or clearing local storage.</li>
+            <li><strong>Setup sequences</strong> &mdash; pre-test configuration steps like setting cookies, accepting terms, or dismissing onboarding modals.</li>
+          </ul>
+
+          <h3 id="naming-conventions">Naming Conventions</h3>
+          <p>Use clear, descriptive names that indicate what the flow does and any relevant context:</p>
+          <ul>
+            <li><code>Login as Admin</code> &mdash; specifies the role</li>
+            <li><code>Navigate to User Settings</code> &mdash; specifies the destination</li>
+            <li><code>Fill Registration Form</code> &mdash; specifies which form</li>
+            <li><code>Cleanup: Delete Test User</code> &mdash; prefixes with the purpose</li>
+          </ul>
+
+          <h3 id="use-with-variables">Using Flows with Environment Variables</h3>
+          <p>Flows work seamlessly with <a href="environment-variables.html">environment variables</a>. You can use <code>{{key}}</code> substitution syntax in any step field within a flow. This makes flows even more flexible &mdash; for example, a login flow can use <code>{{username}}</code> and <code>{{password}}</code> variables, allowing you to switch credentials by changing project variables rather than editing the flow.</p>
+
+          <div class="page-nav">
+            <a href="control-flow.html" class="prev">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Control Flow</span>
+            </a>
+            <a href="visual-regression.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Visual Regression &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

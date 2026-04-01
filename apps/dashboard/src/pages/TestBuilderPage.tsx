@@ -30,6 +30,7 @@ import {
   StopCircle,
   Eye,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { testsApi, recorderApi } from '../lib/api';
 import BaselineManager from '../components/BaselineManager';
 import {
@@ -113,6 +114,8 @@ export default function TestBuilderPage() {
     };
   }, []);
 
+  const isSaveAndRunRef = useRef(false);
+
   const saveMutation = useMutation({
     mutationFn: (stepsToSave: TestStep[]) =>
       testsApi.update(testId!, {
@@ -122,6 +125,9 @@ export default function TestBuilderPage() {
     onSuccess: () => {
       setHasChanges(false);
       queryClient.invalidateQueries({ queryKey: ['test', testId] });
+      if (!isSaveAndRunRef.current) {
+        toast.success('Test saved');
+      }
     },
   });
 
@@ -161,6 +167,11 @@ export default function TestBuilderPage() {
       setSelectedStepId(null);
       setShowRunHistory(false);
       queryClient.invalidateQueries({ queryKey: ['runs', testId] });
+      if (result.status === 'passed') {
+        toast.success('Test passed');
+      } else {
+        toast.error(result.error ? `Test failed: ${result.error}` : 'Test failed');
+      }
     },
     onSettled: () => {
       setIsRunning(false);
@@ -178,8 +189,14 @@ export default function TestBuilderPage() {
       setIsRecording(true);
       setRecordedStepCount(0);
 
-      // Skip the initial goto step that will come from the navigation
-      let isFirstGoto = true;
+      // Add the start URL as the first goto step
+      const gotoStep: TestStep = {
+        ...createEmptyStep('goto'),
+        url: recorderUrl,
+      } as TestStep;
+      setSteps((prev) => [...prev, gotoStep]);
+      setRecordedStepCount(1);
+      setHasChanges(true);
 
       // Open WebSocket to receive steps
       const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -190,12 +207,6 @@ export default function TestBuilderPage() {
         try {
           const data = JSON.parse(event.data);
           if (data.type === 'step') {
-            // Skip the first goto (initial navigation we triggered)
-            if (isFirstGoto && data.step.action === 'goto') {
-              isFirstGoto = false;
-              return;
-            }
-            isFirstGoto = false;
             setSteps((prev) => [...prev, data.step]);
             setRecordedStepCount((prev) => prev + 1);
             setHasChanges(true);
@@ -205,16 +216,28 @@ export default function TestBuilderPage() {
             setIsRecorderOpen(false);
             setRecorderSessionId(null);
           }
-        } catch {
-          // ignore parse errors
+        } catch (e) {
+          console.warn('Failed to parse recorder message:', e);
         }
       };
 
       ws.onclose = () => {
+        const hadError = wsRef.current === null;
         wsRef.current = null;
+        if (!hadError) {
+          // Normal close not caused by an error — no toast needed
+        }
+      };
+
+      ws.onerror = () => {
+        wsRef.current = null; // Signal to onclose that error was handled
+        toast.error('Recorder connection lost');
+        setIsRecording(false);
+        setRecorderSessionId(null);
       };
     } catch (error) {
       console.error('Failed to start recording:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to start recording');
     } finally {
       setIsRecorderStarting(false);
     }
@@ -295,9 +318,14 @@ export default function TestBuilderPage() {
 
   const handleRun = () => {
     if (hasChanges) {
+      isSaveAndRunRef.current = true;
       saveMutation.mutate(steps, {
         onSuccess: () => {
+          isSaveAndRunRef.current = false;
           runMutation.mutate();
+        },
+        onError: () => {
+          isSaveAndRunRef.current = false;
         },
       });
     } else {

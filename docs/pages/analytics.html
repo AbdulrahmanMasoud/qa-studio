@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics - QA Studio Docs</title>
+  <meta name="description" content="Monitor test health with the Analytics dashboard: summary cards, trend charts, flaky test detection, and test health breakdowns.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Analytics</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Analytics</h1>
+          <p class="subtitle">Monitor your project's test health at a glance with summary cards, trend charts, and flaky test detection &mdash; all calculated automatically from your run history.</p>
+
+          <h2 id="overview">Overview</h2>
+
+          <p>The Analytics dashboard (the <strong>Project Dashboard</strong> page) provides a comprehensive view of your project's testing health. It aggregates data from all test runs in a project and presents it through summary cards, a 30-day trend chart, flaky test detection, and a test health breakdown.</p>
+
+          <p>To access the dashboard, navigate to your project's test list and click the <strong>Dashboard</strong> link. The dashboard loads data from three API endpoints: summary, trends, and flaky tests.</p>
+
+          <div class="callout info">
+            <div class="callout-title">Info</div>
+            <p>Analytics are calculated entirely from your existing run history data. No separate tracking or configuration is needed &mdash; every test run automatically contributes to your analytics.</p>
+          </div>
+
+          <h2 id="summary-cards">Summary Cards</h2>
+
+          <p>The top of the dashboard displays four summary cards that give you an immediate snapshot of your project's health:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Card</th>
+                <th>Description</th>
+                <th>Calculation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Total Tests</strong></td>
+                <td>The total number of tests defined in the project.</td>
+                <td>Count of all test records in the project.</td>
+              </tr>
+              <tr>
+                <td><strong>Pass Rate</strong></td>
+                <td>The percentage of runs that passed, displayed as a percentage.</td>
+                <td><code>Math.round((passedRuns / totalRuns) * 100)</code>. Returns 0% if no runs exist.</td>
+              </tr>
+              <tr>
+                <td><strong>Total Runs</strong></td>
+                <td>The total number of individual test executions across all tests.</td>
+                <td>Count of all run records for tests in the project.</td>
+              </tr>
+              <tr>
+                <td><strong>Average Duration</strong></td>
+                <td>The mean execution time across all runs, displayed in a human-readable format (e.g., "2.3s" or "1m 15s").</td>
+                <td><code>Math.round(totalDurationMs / totalRuns)</code>. Returns 0 if no runs exist.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>The summary endpoint returns all four values in a single response:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">GET /api/projects/:projectId/analytics/summary</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "totalTests": 24,
+  "totalRuns": 156,
+  "passRate": 87,
+  "avgDuration": 4523,
+  "testStatusCounts": {
+    "passing": 18,
+    "failing": 4,
+    "noRuns": 2
+  }
+}</code></pre>
+          </div>
+
+          <h2 id="trend-chart">Trend Chart</h2>
+
+          <p>The trend section displays a 30-day stacked bar chart showing daily pass and fail counts. Each bar represents a single day, with green segments for passed runs and red segments for failed runs. A pass rate percentage is calculated for each day.</p>
+
+          <p>The trend data is fetched from the trends endpoint, which accepts an optional <code>days</code> query parameter (defaults to 30):</p>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>GET /api/projects/:projectId/analytics/trends?days=30</code></pre>
+          </div>
+
+          <p>The response contains a <code>dailyStats</code> array sorted chronologically. Each entry includes:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Response</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "dailyStats": [
+    {
+      "date": "2026-01-21",
+      "totalRuns": 12,
+      "passed": 10,
+      "failed": 2,
+      "passRate": 83
+    },
+    {
+      "date": "2026-01-22",
+      "totalRuns": 8,
+      "passed": 8,
+      "failed": 0,
+      "passRate": 100
+    }
+  ]
+}</code></pre>
+          </div>
+
+          <p>The chart groups runs by the date portion of their <code>createdAt</code> timestamp (the <code>YYYY-MM-DD</code> part). Days with no runs are omitted from the array. The pass rate per day is calculated as <code>Math.round((passed / totalRuns) * 100)</code>.</p>
+
+          <h2 id="flaky-test-detection">Flaky Test Detection</h2>
+
+          <p>The flaky tests section identifies tests with inconsistent results. A flaky test is one that alternates between passing and failing across recent runs, which makes it unreliable and difficult to trust.</p>
+
+          <h3 id="flakiness-algorithm">Flakiness Algorithm</h3>
+
+          <p>QA Studio calculates a <strong>flakiness score</strong> for each test using the following algorithm:</p>
+
+          <div class="steps">
+            <div class="step">
+              <h4>Fetch Recent Runs</h4>
+              <p>The last <strong>10 runs</strong> for each test are retrieved, ordered by most recent first. Tests with fewer than 2 runs are excluded from flaky analysis.</p>
+            </div>
+
+            <div class="step">
+              <h4>Count Status Alternations</h4>
+              <p>The algorithm walks through the run history and counts every time the status changes from one run to the next. A <strong>pass-to-fail</strong> transition or a <strong>fail-to-pass</strong> transition each count as one alternation.</p>
+            </div>
+
+            <div class="step">
+              <h4>Calculate Score</h4>
+              <p>The flakiness score is computed as:</p>
+              <div class="code-block" data-lang="text">
+                <div class="code-header">
+                  <span class="code-lang">Formula</span>
+                  <button class="copy-btn">Copy</button>
+                </div>
+                <pre><code>flakinessScore = alternations / (recentRuns.length - 1)</code></pre>
+              </div>
+              <p>The result is rounded to two decimal places. A score of <strong>0</strong> means the test is completely stable (all runs have the same status). A score of <strong>1.0</strong> means every consecutive run alternated status (maximum flakiness).</p>
+            </div>
+          </div>
+
+          <p>Here are some example scores to illustrate:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Run History (newest first)</th>
+                <th>Alternations</th>
+                <th>Score</th>
+                <th>Interpretation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>pass, pass, pass, pass, pass</td>
+                <td>0</td>
+                <td>0.00</td>
+                <td>Stable &mdash; consistently passing</td>
+              </tr>
+              <tr>
+                <td>fail, fail, fail, fail, fail</td>
+                <td>0</td>
+                <td>0.00</td>
+                <td>Stable &mdash; consistently failing</td>
+              </tr>
+              <tr>
+                <td>pass, pass, fail, fail, pass</td>
+                <td>2</td>
+                <td>0.50</td>
+                <td>Moderately flaky</td>
+              </tr>
+              <tr>
+                <td>pass, fail, pass, fail, pass</td>
+                <td>4</td>
+                <td>1.00</td>
+                <td>Highly flaky &mdash; alternating every run</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 id="flaky-test-display">Flaky Test Display</h3>
+
+          <p>The flaky tests list is sorted by flakiness score in descending order (most flaky first). Each entry shows:</p>
+
+          <ul>
+            <li><strong>Test name</strong> &mdash; links to the test in the builder</li>
+            <li><strong>Flakiness score</strong> &mdash; the numerical score (0.00 to 1.00)</li>
+            <li><strong>Recent result dots</strong> &mdash; a row of colored circles representing the last 10 runs: green dots for passed runs and red dots for failed runs</li>
+          </ul>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">GET /api/projects/:projectId/analytics/flaky</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "flakyTests": [
+    {
+      "testId": "abc123",
+      "testName": "Login Flow",
+      "flakinessScore": 0.67,
+      "recentResults": [
+        { "status": "passed", "createdAt": "2026-02-20T10:00:00Z" },
+        { "status": "failed", "createdAt": "2026-02-19T10:00:00Z" },
+        { "status": "passed", "createdAt": "2026-02-18T10:00:00Z" },
+        { "status": "passed", "createdAt": "2026-02-17T10:00:00Z" }
+      ]
+    }
+  ]
+}</code></pre>
+          </div>
+
+          <div class="callout tip">
+            <div class="callout-title">Tip</div>
+            <p>Regularly check the flaky tests section to identify unreliable tests. Flaky tests erode confidence in your test suite and should be investigated promptly. Common causes include timing-dependent assertions, external service dependencies, and non-deterministic page content.</p>
+          </div>
+
+          <h2 id="test-health-breakdown">Test Health Breakdown</h2>
+
+          <p>The summary endpoint also returns a <code>testStatusCounts</code> object that categorizes every test in the project into one of three groups based on its most recent run:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Criteria</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Passing</strong></td>
+                <td>Latest run status is <code>passed</code></td>
+                <td>Tests whose most recent execution succeeded.</td>
+              </tr>
+              <tr>
+                <td><strong>Failing</strong></td>
+                <td>Latest run status is <code>failed</code></td>
+                <td>Tests whose most recent execution failed. These need attention.</td>
+              </tr>
+              <tr>
+                <td><strong>No Runs</strong></td>
+                <td>No run records exist for the test</td>
+                <td>Tests that have been created but never executed.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>The breakdown is displayed visually on the dashboard, often as a pie chart or segmented bar, giving you a quick understanding of how many tests are healthy versus needing attention.</p>
+
+          <h2 id="accessing-the-dashboard">Accessing the Dashboard</h2>
+
+          <p>To open the analytics dashboard:</p>
+
+          <div class="steps">
+            <div class="step">
+              <h4>Navigate to Your Project</h4>
+              <p>From the home screen, click on the project you want to analyze. This takes you to the project's test list page.</p>
+            </div>
+
+            <div class="step">
+              <h4>Click Dashboard</h4>
+              <p>On the project test list page, click the <strong>Dashboard</strong> link in the top navigation area. This opens the <code>ProjectDashboardPage</code>, which fetches and displays all analytics data.</p>
+            </div>
+
+            <div class="step">
+              <h4>Review the Data</h4>
+              <p>The dashboard loads all three analytics endpoints (summary, trends, and flaky) in parallel. Data is displayed immediately as each request completes, thanks to independent TanStack Query hooks for each section.</p>
+            </div>
+          </div>
+
+          <h2 id="api-endpoints">API Endpoints</h2>
+
+          <p>The analytics feature exposes three REST endpoints, all scoped to a specific project:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Endpoint</th>
+                <th>Method</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>/api/projects/:projectId/analytics/summary</code></td>
+                <td>GET</td>
+                <td>Returns total tests, total runs, pass rate, average duration, and test status counts.</td>
+              </tr>
+              <tr>
+                <td><code>/api/projects/:projectId/analytics/trends</code></td>
+                <td>GET</td>
+                <td>Returns daily pass/fail statistics. Accepts optional <code>?days=N</code> query parameter (default: 30).</td>
+              </tr>
+              <tr>
+                <td><code>/api/projects/:projectId/analytics/flaky</code></td>
+                <td>GET</td>
+                <td>Returns all tests with flakiness scores, sorted by most flaky first.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="page-nav">
+            <a href="browser-config.html">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Browser Configuration</span>
+            </a>
+            <a href="scheduled-runs.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Scheduled Runs &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

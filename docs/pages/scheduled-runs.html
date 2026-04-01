@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scheduled Runs - QA Studio Docs</title>
+  <meta name="description" content="Automate test execution with cron-based schedules, configure data retention, and manage cleanup of old runs, screenshots, and videos.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Scheduled Runs</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Scheduled Runs</h1>
+          <p class="subtitle">Automate test execution on a recurring basis using cron expressions. Configure schedules for entire projects or individual suites, and manage data retention to keep your disk usage under control.</p>
+
+          <h2 id="overview">Overview</h2>
+
+          <p>Scheduled runs let you execute your tests automatically on a recurring basis without manual intervention. Each schedule is tied to a project and optionally to a specific test suite. When a schedule fires, it runs all project tests (or the suite's tests) with a concurrency of 2, records the results, and updates the schedule's status tracking fields.</p>
+
+          <p>Schedules are managed through the REST API and persisted in the SQLite database. On server startup, all enabled schedules are reloaded via <code>loadAllSchedules()</code>, ensuring that your automation survives server restarts.</p>
+
+          <div class="callout warning">
+            <div class="callout-title">Warning</div>
+            <p>Schedules persist across server restarts. All enabled schedules are automatically reloaded when the server starts up via <code>loadAllSchedules()</code>. If you stop the server for an extended period, any schedules that were due to fire during that time will not retroactively execute &mdash; they will simply resume on the next scheduled time after the server starts.</p>
+          </div>
+
+          <h2 id="creating-a-schedule">Creating a Schedule</h2>
+
+          <p>To create a schedule, send a POST request to the schedules endpoint with the following fields:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>projectId</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>The ID of the project whose tests to run.</td>
+              </tr>
+              <tr>
+                <td><code>name</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>A descriptive name for the schedule (1-100 characters).</td>
+              </tr>
+              <tr>
+                <td><code>cronExpression</code></td>
+                <td>string</td>
+                <td>Yes</td>
+                <td>A valid cron expression defining the schedule frequency.</td>
+              </tr>
+              <tr>
+                <td><code>suiteId</code></td>
+                <td>string</td>
+                <td>No</td>
+                <td>Optional suite ID. If provided, only that suite's tests will run. If omitted, all project tests run.</td>
+              </tr>
+              <tr>
+                <td><code>enabled</code></td>
+                <td>boolean</td>
+                <td>No</td>
+                <td>Whether the schedule is active. Defaults to <code>true</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">POST /api/schedules</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "projectId": "proj_abc123",
+  "name": "Nightly Regression Suite",
+  "cronExpression": "0 0 * * *",
+  "suiteId": "suite_xyz789",
+  "enabled": true
+}</code></pre>
+          </div>
+
+          <p>The server validates the cron expression using the <code>node-cron</code> library. If the expression is invalid, a 400 error is returned. If the schedule is enabled, it is immediately activated via <code>scheduleJob()</code>.</p>
+
+          <h2 id="cron-expression-format">Cron Expression Format</h2>
+
+          <p>Cron expressions follow the standard five-field format:</p>
+
+          <div class="code-block" data-lang="text">
+            <div class="code-header">
+              <span class="code-lang">Format</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>┌───────────── minute (0-59)
+│ ┌───────────── hour (0-23)
+│ │ ┌───────────── day of month (1-31)
+│ │ │ ┌───────────── month (1-12)
+│ │ │ │ ┌───────────── day of week (0-7, where 0 and 7 are Sunday)
+│ │ │ │ │
+* * * * *</code></pre>
+          </div>
+
+          <h3 id="common-presets">Common Presets</h3>
+
+          <p>Here are some commonly used cron expressions:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Expression</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>0 * * * *</code></td>
+                <td>Every hour, on the hour</td>
+              </tr>
+              <tr>
+                <td><code>0 0 * * *</code></td>
+                <td>Every day at midnight</td>
+              </tr>
+              <tr>
+                <td><code>0 9 * * 1-5</code></td>
+                <td>Every weekday at 9:00 AM</td>
+              </tr>
+              <tr>
+                <td><code>*/30 * * * *</code></td>
+                <td>Every 30 minutes</td>
+              </tr>
+              <tr>
+                <td><code>0 6,18 * * *</code></td>
+                <td>Twice daily at 6:00 AM and 6:00 PM</td>
+              </tr>
+              <tr>
+                <td><code>0 0 * * 0</code></td>
+                <td>Every Sunday at midnight</td>
+              </tr>
+              <tr>
+                <td><code>0 0 1 * *</code></td>
+                <td>First day of every month at midnight</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2 id="schedule-behavior">Schedule Behavior</h2>
+
+          <p>When a schedule fires:</p>
+
+          <ul>
+            <li>If a <strong>suiteId</strong> is set, only the tests in that suite are executed.</li>
+            <li>If no suiteId is set, <strong>all tests in the project</strong> are executed.</li>
+            <li>Tests run with a <strong>concurrency of 2</strong>, meaning up to 2 tests execute in parallel.</li>
+            <li>Each test execution creates a run record, exactly as if you had manually triggered the run.</li>
+            <li>Results contribute to the analytics dashboard (pass rate, trends, flaky detection).</li>
+          </ul>
+
+          <h2 id="schedule-status-tracking">Schedule Status Tracking</h2>
+
+          <p>Each schedule record tracks its execution history through three status fields:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>lastRunAt</code></td>
+                <td>string (ISO timestamp) or null</td>
+                <td>The timestamp of the most recent execution. Null if never run.</td>
+              </tr>
+              <tr>
+                <td><code>lastRunStatus</code></td>
+                <td>string or null</td>
+                <td>The result of the most recent execution (<code>"passed"</code> or <code>"failed"</code>). Null if never run.</td>
+              </tr>
+              <tr>
+                <td><code>nextRunAt</code></td>
+                <td>string (ISO timestamp) or null</td>
+                <td>The calculated timestamp of the next scheduled execution.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>These fields allow you to monitor schedule health at a glance and detect any schedules that may be consistently failing.</p>
+
+          <h2 id="enable-disable">Enable / Disable Toggle</h2>
+
+          <p>Schedules can be enabled or disabled at any time by updating the <code>enabled</code> field. When a schedule is disabled, its cron job is unregistered via <code>unscheduleJob()</code> and it will not fire until re-enabled.</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">PUT /api/schedules/:id</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "enabled": false
+}</code></pre>
+          </div>
+
+          <p>When re-enabled, the schedule is immediately re-registered with the cron scheduler. You can also update the <code>name</code>, <code>cronExpression</code>, and <code>suiteId</code> in the same request.</p>
+
+          <h2 id="managing-schedules">Managing Schedules</h2>
+
+          <p>The full set of schedule management endpoints:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Endpoint</th>
+                <th>Method</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>/api/projects/:projectId/schedules</code></td>
+                <td>GET</td>
+                <td>List all schedules for a project, ordered by creation date.</td>
+              </tr>
+              <tr>
+                <td><code>/api/schedules</code></td>
+                <td>POST</td>
+                <td>Create a new schedule. Activates immediately if enabled.</td>
+              </tr>
+              <tr>
+                <td><code>/api/schedules/:id</code></td>
+                <td>PUT</td>
+                <td>Update a schedule's name, cron expression, suiteId, or enabled status.</td>
+              </tr>
+              <tr>
+                <td><code>/api/schedules/:id</code></td>
+                <td>DELETE</td>
+                <td>Delete a schedule. The cron job is unregistered and the record is removed.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2 id="data-cleanup-retention">Data Cleanup &amp; Retention</h2>
+
+          <p>As tests run automatically on a recurring basis, run records, screenshots, videos, and diff images accumulate over time. QA Studio includes an automatic cleanup system to manage disk usage.</p>
+
+          <h3 id="retention-configuration">Retention Configuration</h3>
+
+          <p>The retention period is controlled by the <code>RETENTION_DAYS</code> environment variable:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Variable</th>
+                <th>Default</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>RETENTION_DAYS</code></td>
+                <td>30</td>
+                <td>Number of days to keep run data. Set to 0 to disable automatic cleanup.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 id="automatic-cleanup">Automatic Cleanup</h3>
+
+          <p>The cleanup system runs automatically in two ways:</p>
+
+          <ul>
+            <li><strong>On server startup</strong> &mdash; A deferred cleanup runs 5 seconds after the server starts, removing any data older than the retention period.</li>
+            <li><strong>Daily at 3:00 AM</strong> &mdash; A cron job (<code>0 3 * * *</code>) runs the cleanup every day via <code>startCleanupSchedule()</code>.</li>
+          </ul>
+
+          <p>The cleanup process removes:</p>
+
+          <ul>
+            <li><strong>Old run records</strong> &mdash; Deleted from the <code>runs</code> table.</li>
+            <li><strong>Old suite run records</strong> &mdash; Deleted from the <code>suite_runs</code> table.</li>
+            <li><strong>Screenshot files</strong> &mdash; Deleted from disk for expired runs.</li>
+            <li><strong>Video files</strong> &mdash; Deleted from disk for expired runs.</li>
+            <li><strong>Diff image files</strong> &mdash; Actual and diff images for expired runs are removed. Baseline images referenced by diffs are preserved.</li>
+          </ul>
+
+          <h3 id="manual-cleanup">Manual Cleanup</h3>
+
+          <p>You can trigger a cleanup on demand at any time using the admin endpoint:</p>
+
+          <div class="code-block" data-lang="http">
+            <div class="code-header">
+              <span class="code-lang">HTTP</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>POST /api/admin/cleanup</code></pre>
+          </div>
+
+          <p>This runs the same cleanup logic as the automatic schedule, using the current <code>RETENTION_DAYS</code> value. The response confirms success:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">Response</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "success": true
+}</code></pre>
+          </div>
+
+          <div class="callout tip">
+            <div class="callout-title">Tip</div>
+            <p>Use the <code>POST /api/admin/cleanup</code> endpoint to manually free disk space when needed. This is especially useful after bulk test runs or when you have lowered the <code>RETENTION_DAYS</code> value and want the change to take effect immediately.</p>
+          </div>
+
+          <h2 id="example-workflow">Example Workflow</h2>
+
+          <p>A typical scheduling workflow looks like this:</p>
+
+          <div class="steps">
+            <div class="step">
+              <h4>Create a Test Suite</h4>
+              <p>Group your most important tests into a <a href="test-suites.html">test suite</a>. For example, create a "Smoke Tests" suite with your critical path tests.</p>
+            </div>
+
+            <div class="step">
+              <h4>Create a Schedule</h4>
+              <p>Create a schedule targeting your suite. For nightly regression testing, use <code>0 0 * * *</code> (midnight daily). For continuous monitoring, use <code>0 * * * *</code> (every hour).</p>
+            </div>
+
+            <div class="step">
+              <h4>Monitor Results</h4>
+              <p>Check the <a href="analytics.html">Analytics dashboard</a> to monitor trends. The scheduled run results feed into the same analytics as manual runs &mdash; you will see trends, pass rates, and flaky test detection all reflect the automated runs.</p>
+            </div>
+
+            <div class="step">
+              <h4>Manage Retention</h4>
+              <p>Configure <code>RETENTION_DAYS</code> based on your disk space and data needs. 30 days is the default and works well for most projects. Reduce it if disk space is limited; increase it if you need longer historical data for trend analysis.</p>
+            </div>
+          </div>
+
+          <div class="page-nav">
+            <a href="analytics.html">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Analytics</span>
+            </a>
+            <a href="export-import.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Export &amp; Import &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

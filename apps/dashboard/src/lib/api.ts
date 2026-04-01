@@ -149,8 +149,8 @@ export const testsApi = {
           } else if (data.type === 'complete') {
             finalRun = data.run;
           }
-        } catch {
-          // ignore parse errors
+        } catch (e) {
+          console.warn('SSE parse error in runWithProgress:', e);
         }
       }
     }
@@ -222,7 +222,9 @@ export const suiteRunsApi = {
         if (!line.startsWith('data: ')) continue;
         try {
           onEvent(JSON.parse(line.slice(6)));
-        } catch {}
+        } catch (e) {
+          console.warn('SSE parse error in runAll:', e);
+        }
       }
     }
   },
@@ -259,7 +261,9 @@ export const suiteRunsApi = {
         if (!line.startsWith('data: ')) continue;
         try {
           onEvent(JSON.parse(line.slice(6)));
-        } catch {}
+        } catch (e) {
+          console.warn('SSE parse error in runSuite:', e);
+        }
       }
     }
   },

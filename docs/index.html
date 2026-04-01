@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QA Studio Documentation</title>
+  <meta name="description" content="Documentation for QA Studio — a no-code E2E testing platform powered by Playwright">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar Overlay (mobile) -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <a href="index.html" class="sidebar-header">
+        <img src="assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="pages/getting-started.html" class="nav-link">Introduction</a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="pages/test-builder.html" class="nav-link">Test Builder</a>
+          <a href="pages/recording.html" class="nav-link">Recording</a>
+          <a href="pages/control-flow.html" class="nav-link">Control Flow</a>
+          <a href="pages/reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="pages/visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="pages/test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="pages/environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="pages/browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="pages/analytics.html" class="nav-link">Analytics</a>
+          <a href="pages/scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="pages/export-import.html" class="nav-link">Export & Import</a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="pages/actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="pages/api-reference.html" class="nav-link">API Reference</a>
+          <a href="pages/self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12h18M3 6h18M3 18h18"/>
+            </svg>
+          </button>
+          <div class="breadcrumb">
+            <span class="breadcrumb-current">Home</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>QA Studio Documentation</h1>
+          <p class="subtitle">A no-code end-to-end testing platform powered by Playwright. Build, record, run, and manage automated browser tests through an intuitive visual interface.</p>
+
+          <h2>Quick Start</h2>
+
+          <div class="steps">
+            <div class="step">
+              <h4>Install & Setup</h4>
+              <p>Clone the repo and run the one-command setup:</p>
+              <div class="code-block" data-lang="bash">
+                <div class="code-header">
+                  <span class="code-lang">bash</span>
+                  <button class="copy-btn">Copy</button>
+                </div>
+                <pre><code>git clone &lt;repo-url&gt;
+cd qa-studio
+pnpm setup</code></pre>
+              </div>
+            </div>
+
+            <div class="step">
+              <h4>Start the Dev Server</h4>
+              <p>Run both the API server and dashboard:</p>
+              <div class="code-block" data-lang="bash">
+                <div class="code-header">
+                  <span class="code-lang">bash</span>
+                  <button class="copy-btn">Copy</button>
+                </div>
+                <pre><code>pnpm dev</code></pre>
+              </div>
+              <p>Dashboard opens at <code>http://localhost:5173</code>, API at <code>http://localhost:3001</code>.</p>
+            </div>
+
+            <div class="step">
+              <h4>Create Your First Test</h4>
+              <p>Create a project, add a test, build steps with the visual builder or recorder, and hit <strong>Run</strong>.</p>
+              <p><a href="pages/getting-started.html">Read the full getting started guide &rarr;</a></p>
+            </div>
+          </div>
+
+          <h2>Features</h2>
+
+          <div class="feature-grid">
+            <div class="feature-card">
+              <h4>Visual Test Builder</h4>
+              <p>Drag-and-drop interface with 17 action types, selector helpers, and live step editing.</p>
+            </div>
+            <div class="feature-card">
+              <h4>Test Recording</h4>
+              <p>Record browser interactions with intelligent 7-tier selector generation via WebSocket streaming.</p>
+            </div>
+            <div class="feature-card">
+              <h4>Cross-Browser Testing</h4>
+              <p>Run on Chromium, Firefox, and WebKit. Real Chrome mode bypasses bot detection.</p>
+            </div>
+            <div class="feature-card">
+              <h4>Visual Regression</h4>
+              <p>Pixel-level screenshot comparison with baseline management and approve/reject workflow.</p>
+            </div>
+            <div class="feature-card">
+              <h4>Reusable Flows</h4>
+              <p>Create shared step sequences and reference them across tests with nested flow support.</p>
+            </div>
+            <div class="feature-card">
+              <h4>Control Flow</h4>
+              <p>If/else conditionals and loops with 6 condition types and nesting support.</p>
+            </div>
+            <div class="feature-card">
+              <h4>Parallel Execution</h4>
+              <p>Run test suites with configurable concurrency (1-5) and live batch progress tracking.</p>
+            </div>
+            <div class="feature-card">
+              <h4>Analytics Dashboard</h4>
+              <p>Pass rate trends, flaky test detection, test health breakdown, and summary metrics.</p>
+            </div>
+            <div class="feature-card">
+              <h4>Scheduled Runs</h4>
+              <p>Cron-based automated test execution with status tracking and data retention cleanup.</p>
+            </div>
+            <div class="feature-card">
+              <h4>Export & Import</h4>
+              <p>Export tests/projects as JSON. Import with automatic flow ID remapping.</p>
+            </div>
+          </div>
+
+          <h2>Explore the Docs</h2>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><a href="pages/getting-started.html">Getting Started</a></td>
+                <td>Installation, setup, and your first test</td>
+              </tr>
+              <tr>
+                <td><a href="pages/test-builder.html">Test Builder</a></td>
+                <td>3-panel layout, drag-and-drop, step editing</td>
+              </tr>
+              <tr>
+                <td><a href="pages/recording.html">Recording</a></td>
+                <td>Browser interaction capture and selector generation</td>
+              </tr>
+              <tr>
+                <td><a href="pages/actions-reference.html">Actions Reference</a></td>
+                <td>All 17 actions with fields and examples</td>
+              </tr>
+              <tr>
+                <td><a href="pages/control-flow.html">Control Flow</a></td>
+                <td>If/else, loops, conditions, and nesting</td>
+              </tr>
+              <tr>
+                <td><a href="pages/reusable-flows.html">Reusable Flows</a></td>
+                <td>Shared step sequences across tests</td>
+              </tr>
+              <tr>
+                <td><a href="pages/visual-regression.html">Visual Regression</a></td>
+                <td>Screenshot baselines, diffs, and approval workflow</td>
+              </tr>
+              <tr>
+                <td><a href="pages/test-suites.html">Test Suites</a></td>
+                <td>Batch runs and parallel execution</td>
+              </tr>
+              <tr>
+                <td><a href="pages/browser-config.html">Browser Configuration</a></td>
+                <td>Browsers, viewport, permissions, Real Chrome mode</td>
+              </tr>
+              <tr>
+                <td><a href="pages/api-reference.html">API Reference</a></td>
+                <td>All ~45 REST endpoints</td>
+              </tr>
+              <tr>
+                <td><a href="pages/self-hosting.html">Self-Hosting</a></td>
+                <td>Production deployment guide</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Page nav -->
+          <div class="page-nav">
+            <div></div>
+            <a href="pages/getting-started.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Getting Started &rarr;</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Search Modal -->
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="scripts/docs.js"></script>
+</body>
+</html>

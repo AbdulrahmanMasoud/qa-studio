@@ -21,6 +21,19 @@ const app = Fastify({
   logger: true,
 });
 
+// Global error handler — catches unhandled route errors and returns JSON
+app.setErrorHandler((error, request, reply) => {
+  request.log.error(error);
+  const statusCode = error.statusCode || 500;
+  const message = statusCode === 500 ? 'Internal server error' : error.message;
+  reply.status(statusCode).send({ error: message });
+});
+
+// 404 handler for unmatched API routes
+app.setNotFoundHandler((request, reply) => {
+  reply.status(404).send({ error: 'Route not found' });
+});
+
 // CORS for frontend
 await app.register(cors, {
   origin: ['http://localhost:5173', 'http://localhost:3000'],

@@ -56,7 +56,14 @@ sqlite.exec(`
 `);
 
 // Migrations for new columns/tables
-try { sqlite.exec('ALTER TABLE projects ADD COLUMN variables TEXT'); } catch {}
+try {
+  sqlite.exec('ALTER TABLE projects ADD COLUMN variables TEXT');
+} catch (err: unknown) {
+  const message = err instanceof Error ? err.message : String(err);
+  if (!message.includes('duplicate column')) {
+    console.error('Migration warning (projects.variables):', message);
+  }
+}
 
 sqlite.exec(`
   CREATE TABLE IF NOT EXISTS suites (

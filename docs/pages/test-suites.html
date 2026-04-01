@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Suites - QA Studio Docs</title>
+  <meta name="description" content="Organize tests into named suites, run them in parallel with configurable concurrency, and track batch progress with live SSE streaming.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link active">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Test Suites</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Test Suites</h1>
+          <p class="subtitle">Organize tests into named collections, run them in batch with configurable parallel execution, and track progress in real time with live streaming updates.</p>
+
+          <h2 id="what-are-suites">What Are Suites?</h2>
+          <p>A <strong>test suite</strong> is a named collection of tests within a project. Suites let you group related tests together and run them as a batch &mdash; for example, you might create a "Smoke Tests" suite with your most critical tests, a "Checkout Flow" suite for all e-commerce tests, or a "Full Regression" suite that includes everything.</p>
+          <p>Suites provide two key capabilities:</p>
+          <ul>
+            <li><strong>Organization</strong> &mdash; logically group tests by feature, priority, or any criteria that makes sense for your workflow</li>
+            <li><strong>Batch execution</strong> &mdash; run all tests in a suite (or all tests in the project) with a single click, with configurable parallel execution</li>
+          </ul>
+
+          <h2 id="creating-a-suite">Creating a Suite</h2>
+          <p>Suites are created and managed from the <strong>Tests</strong> page within your project.</p>
+
+          <div class="steps">
+            <div class="step">
+              <h4>Open the Tests Page</h4>
+              <p>Navigate to your project and click the <strong>Tests</strong> tab. This shows all tests in the project along with suite management controls.</p>
+            </div>
+
+            <div class="step">
+              <h4>Create a New Suite</h4>
+              <p>Click the <strong>New Suite</strong> button. Enter a descriptive name for the suite (e.g., "Login Tests", "API Smoke Tests", "Full Regression").</p>
+            </div>
+
+            <div class="step">
+              <h4>Select Tests</h4>
+              <p>Choose which tests to include in the suite. You can select any combination of tests from the project. A test can belong to multiple suites.</p>
+            </div>
+
+            <div class="step">
+              <h4>Save</h4>
+              <p>Save the suite. It now appears in the suite list and can be run at any time.</p>
+            </div>
+          </div>
+
+          <h2 id="running-tests">Running Tests in Batch</h2>
+          <p>QA Studio provides two ways to run multiple tests at once:</p>
+
+          <h3 id="run-all-project-tests">Run All Project Tests</h3>
+          <p>From the Tests page, click the <strong>Run All</strong> button to execute every test in the project. Before the run starts, you can select the concurrency level (1 through 5) using the concurrency selector next to the button.</p>
+
+          <h3 id="run-a-specific-suite">Run a Specific Suite</h3>
+          <p>Select a suite from the suite list and click its <strong>Run</strong> button. Only the tests included in that suite will execute. The same concurrency selector is available for suite runs.</p>
+
+          <h2 id="parallel-execution">Parallel Execution</h2>
+          <p>QA Studio supports parallel test execution using a <strong>semaphore pattern</strong>. The concurrency setting controls how many tests run simultaneously.</p>
+
+          <div class="callout info">
+            <div class="callout-title">Concurrency Setting</div>
+            <p>The concurrency setting controls how many tests run simultaneously. Each test gets its own isolated browser instance, so parallel tests do not interfere with each other.</p>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Concurrency</th>
+                <th>Behavior</th>
+                <th>Best For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1</strong></td>
+                <td>Sequential execution &mdash; one test at a time, each waits for the previous to finish</td>
+                <td>Debugging, resource-constrained environments, tests with shared state</td>
+              </tr>
+              <tr>
+                <td><strong>2</strong></td>
+                <td>Two tests run in parallel at any given time</td>
+                <td>Light parallelism with moderate resource usage</td>
+              </tr>
+              <tr>
+                <td><strong>3</strong></td>
+                <td>Three tests run in parallel</td>
+                <td>Balanced speed and resource usage</td>
+              </tr>
+              <tr>
+                <td><strong>4</strong></td>
+                <td>Four tests run in parallel</td>
+                <td>Faster execution on machines with adequate resources</td>
+              </tr>
+              <tr>
+                <td><strong>5</strong></td>
+                <td>Maximum parallelism &mdash; five tests running concurrently</td>
+                <td>Maximum speed on powerful machines</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 id="how-the-semaphore-works">How the Semaphore Works</h3>
+          <p>The batch runner uses a semaphore (counting lock) to enforce the concurrency limit. When a batch run starts:</p>
+          <ol>
+            <li>All tests are queued for execution</li>
+            <li>The semaphore allows up to N tests (where N is the concurrency setting) to acquire a "slot" and begin running</li>
+            <li>When a test completes (pass or fail), it releases its slot</li>
+            <li>The next queued test immediately acquires the freed slot and starts running</li>
+            <li>This continues until all tests have completed</li>
+          </ol>
+          <p>Each test runs in its own isolated Playwright browser context, so parallel tests do not share cookies, local storage, or any other browser state.</p>
+
+          <div class="callout tip">
+            <div class="callout-title">Choosing Concurrency</div>
+            <p>Start with concurrency <strong>1</strong> when debugging or setting up new tests. This makes output easier to follow and isolates any failures. Once your tests are stable, increase concurrency to <strong>3-5</strong> for faster execution. Watch your server's CPU and memory &mdash; each browser instance consumes resources.</p>
+          </div>
+
+          <h2 id="live-progress-tracking">Live Progress Tracking</h2>
+          <p>During a batch run, QA Studio streams progress updates to the dashboard in real time using <strong>Server-Sent Events (SSE)</strong>. The dashboard displays the <strong>BatchRunProgress</strong> component, which provides a live view of the run.</p>
+
+          <h3 id="sse-events">SSE Streaming Events</h3>
+          <p>The server emits the following events during a batch run:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Payload</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>test-start</code></td>
+                <td>Test ID, test name</td>
+                <td>Emitted when a test begins execution. The UI moves the test from "queued" to "running" status.</td>
+              </tr>
+              <tr>
+                <td><code>test-complete</code></td>
+                <td>Test ID, status (passed/failed), duration (ms), error message (if failed)</td>
+                <td>Emitted when a test finishes. Includes the outcome and how long it took. If the test failed, the error message is included.</td>
+              </tr>
+              <tr>
+                <td><code>suite-complete</code></td>
+                <td>Total tests, passed count, failed count, total duration</td>
+                <td>Emitted when all tests in the batch have finished. Provides aggregate results.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 id="batch-run-progress">BatchRunProgress Component</h3>
+          <p>The dashboard's BatchRunProgress component consumes these SSE events and renders a live progress interface:</p>
+          <ul>
+            <li><strong>Progress bar</strong> &mdash; a visual bar showing the percentage of completed tests (passed + failed out of total)</li>
+            <li><strong>Pass/fail counters</strong> &mdash; running totals of passed and failed tests, updated in real time as each test completes</li>
+            <li><strong>Per-test status list</strong> &mdash; a list of all tests in the batch showing their current state:
+              <ul>
+                <li><strong>Queued</strong> &mdash; waiting to start</li>
+                <li><strong>Running</strong> &mdash; currently executing (with a spinner indicator)</li>
+                <li><strong>Passed</strong> &mdash; completed successfully (with duration)</li>
+                <li><strong>Failed</strong> &mdash; completed with an error (with duration and error message)</li>
+              </ul>
+            </li>
+            <li><strong>Live updates</strong> &mdash; the entire view updates as each SSE event arrives, with no page refreshes needed</li>
+          </ul>
+
+          <h2 id="suite-run-history">Suite Run History</h2>
+          <p>Every batch run (whether triggered from "Run All" or from a specific suite) is recorded and accessible from the Tests page. The run history is paginated and shows:</p>
+          <ul>
+            <li><strong>Run timestamp</strong> &mdash; when the batch run was initiated</li>
+            <li><strong>Suite name</strong> &mdash; which suite was run (or "All Tests" for project-wide runs)</li>
+            <li><strong>Results summary</strong> &mdash; total tests, passed, failed</li>
+            <li><strong>Duration</strong> &mdash; total wall-clock time for the batch run</li>
+          </ul>
+
+          <h2 id="suite-run-details">Suite Run Details</h2>
+          <p>Click on any suite run in the history to view its details. The detail view provides:</p>
+          <ul>
+            <li><strong>Aggregate metrics</strong> &mdash; total tests, passed count, failed count, pass rate percentage</li>
+            <li><strong>Individual test results</strong> &mdash; each test in the suite with its status, duration, and any error messages</li>
+            <li><strong>Links to individual runs</strong> &mdash; click on any test result to navigate to its individual run detail page, where you can see step-by-step execution results, screenshots, and visual diffs</li>
+          </ul>
+          <p>This two-level view (suite summary to individual test detail) lets you quickly identify which tests failed and drill down into the specifics of each failure.</p>
+
+          <h2 id="best-practices">Best Practices</h2>
+          <ul>
+            <li><strong>Create focused suites</strong> &mdash; group tests by feature or user journey rather than creating one massive suite. This makes it easier to run targeted regression checks.</li>
+            <li><strong>Use a "Smoke" suite</strong> &mdash; create a small suite of your most critical tests (5-10) that validates core functionality. Run this suite frequently for fast feedback.</li>
+            <li><strong>Match concurrency to resources</strong> &mdash; higher concurrency runs tests faster but uses more CPU and memory. Monitor your server's resource usage and dial back if you see instability.</li>
+            <li><strong>Review failed tests promptly</strong> &mdash; use the suite run detail view to identify failures and click through to individual run details for debugging.</li>
+            <li><strong>Leverage scheduled runs</strong> &mdash; combine suites with <a href="scheduled-runs.html">scheduled runs</a> to automatically execute your test suites on a regular cadence.</li>
+          </ul>
+
+          <div class="page-nav">
+            <a href="visual-regression.html" class="prev">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Visual Regression</span>
+            </a>
+            <a href="environment-variables.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Environment Variables &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

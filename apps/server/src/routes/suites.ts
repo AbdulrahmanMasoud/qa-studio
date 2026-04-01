@@ -5,6 +5,7 @@ import { suites, suiteRuns, tests, projects } from '../db/schema.js';
 import { eq, desc } from 'drizzle-orm';
 import { generateId, TestStep, TestConfig, TestDefinition } from '@qa-studio/shared';
 import { runBatch } from '../services/batch-runner.js';
+import { safeSSEWrite, safeSSEEnd } from '../utils/sse.js';
 
 const createSuiteSchema = z.object({
   projectId: z.string(),
@@ -84,6 +85,7 @@ export async function suiteRoutes(app: FastifyInstance) {
     if (allTests.length === 0) return reply.status(400).send({ error: 'No tests to run' });
 
     const variables = (project.variables as Record<string, string>) || undefined;
+    const baseUrl = (project.baseUrl as string) || undefined;
 
     const testDefs: TestDefinition[] = allTests.map((t) => ({
       id: t.id,
@@ -124,17 +126,18 @@ export async function suiteRoutes(app: FastifyInstance) {
     const result = await runBatch({
       tests: testDefs,
       variables,
+      baseUrl,
       concurrency,
       onTestStart: (testId, index) => {
         const testName = allTests.find((t) => t.id === testId)?.name || testId;
-        reply.raw.write(`data: ${JSON.stringify({ type: 'test-start', testId, testName, index })}\n\n`);
+        safeSSEWrite(reply.raw, { type: 'test-start', testId, testName, index });
       },
       onTestComplete: (testId, run, index) => {
         runIds.push(run.id);
         if (run.status === 'passed') passedCount++;
         else failedCount++;
         const testName = allTests.find((t) => t.id === testId)?.name || testId;
-        reply.raw.write(`data: ${JSON.stringify({
+        safeSSEWrite(reply.raw, {
           type: 'test-complete',
           testId,
           testName,
@@ -143,7 +146,7 @@ export async function suiteRoutes(app: FastifyInstance) {
           durationMs: run.durationMs,
           error: run.error,
           runId: run.id,
-        })}\n\n`);
+        });
       },
     });
 
@@ -158,16 +161,16 @@ export async function suiteRoutes(app: FastifyInstance) {
       completedAt,
     }).where(eq(suiteRuns.id, suiteRunId));
 
-    reply.raw.write(`data: ${JSON.stringify({
+    safeSSEWrite(reply.raw, {
       type: 'suite-complete',
       suiteRunId,
       status: failedCount > 0 ? 'failed' : 'passed',
       passed: passedCount,
       failed: failedCount,
       durationMs: result.durationMs,
-    })}\n\n`);
+    });
 
-    reply.raw.end();
+    safeSSEEnd(reply.raw);
     return reply;
   });
 
@@ -182,6 +185,7 @@ export async function suiteRoutes(app: FastifyInstance) {
 
     const project = await db.select().from(projects).where(eq(projects.id, suite.projectId)).get();
     const variables = (project?.variables as Record<string, string>) || undefined;
+    const baseUrl = (project?.baseUrl as string) || undefined;
 
     const suiteTestIds = suite.testIds as string[];
     const allTests = await db.select().from(tests).where(eq(tests.projectId, suite.projectId));
@@ -227,17 +231,18 @@ export async function suiteRoutes(app: FastifyInstance) {
     const result = await runBatch({
       tests: testDefs,
       variables,
+      baseUrl,
       concurrency,
       onTestStart: (testId, index) => {
         const testName = suiteTests.find((t) => t.id === testId)?.name || testId;
-        reply.raw.write(`data: ${JSON.stringify({ type: 'test-start', testId, testName, index })}\n\n`);
+        safeSSEWrite(reply.raw, { type: 'test-start', testId, testName, index });
       },
       onTestComplete: (testId, run, index) => {
         runIds.push(run.id);
         if (run.status === 'passed') passedCount++;
         else failedCount++;
         const testName = suiteTests.find((t) => t.id === testId)?.name || testId;
-        reply.raw.write(`data: ${JSON.stringify({
+        safeSSEWrite(reply.raw, {
           type: 'test-complete',
           testId,
           testName,
@@ -246,7 +251,7 @@ export async function suiteRoutes(app: FastifyInstance) {
           durationMs: run.durationMs,
           error: run.error,
           runId: run.id,
-        })}\n\n`);
+        });
       },
     });
 
@@ -260,16 +265,16 @@ export async function suiteRoutes(app: FastifyInstance) {
       completedAt,
     }).where(eq(suiteRuns.id, suiteRunId));
 
-    reply.raw.write(`data: ${JSON.stringify({
+    safeSSEWrite(reply.raw, {
       type: 'suite-complete',
       suiteRunId,
       status: failedCount > 0 ? 'failed' : 'passed',
       passed: passedCount,
       failed: failedCount,
       durationMs: result.durationMs,
-    })}\n\n`);
+    });
 
-    reply.raw.end();
+    safeSSEEnd(reply.raw);
     return reply;
   });
 

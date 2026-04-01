@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, ArrowLeft, Loader2, Workflow } from 'lucide-react';
+import { toast } from 'sonner';
 import { projectsApi, flowsApi } from '../lib/api';
 
 export default function FlowsPage() {
@@ -28,6 +29,7 @@ export default function FlowsPage() {
       queryClient.invalidateQueries({ queryKey: ['flows', projectId] });
       setShowCreate(false);
       setNewFlowName('');
+      toast.success('Flow created');
     },
   });
 
@@ -35,6 +37,7 @@ export default function FlowsPage() {
     mutationFn: flowsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['flows', projectId] });
+      toast.success('Flow deleted');
     },
   });
 

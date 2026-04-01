@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { X, Trash2, Image, AlertCircle } from 'lucide-react';
+import { X, Trash2, Image } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { visualRegressionApi, testsApi } from '../lib/api';
 import type { StepResult } from '@qa-studio/shared';
 
@@ -17,7 +17,6 @@ interface BaselineManagerProps {
 
 export default function BaselineManager({ testId, onClose }: BaselineManagerProps) {
   const queryClient = useQueryClient();
-  const [error, setError] = useState<string | null>(null);
 
   const { data: baselines, isLoading } = useQuery({
     queryKey: ['baselines', testId],
@@ -32,11 +31,8 @@ export default function BaselineManager({ testId, onClose }: BaselineManagerProp
   const setFromRunMutation = useMutation({
     mutationFn: (runId: string) => visualRegressionApi.setBaselinesFromRun(testId, runId),
     onSuccess: () => {
-      setError(null);
       queryClient.invalidateQueries({ queryKey: ['baselines', testId] });
-    },
-    onError: (err: Error) => {
-      setError(err.message || 'Failed to set baselines');
+      toast.success('Baselines set');
     },
   });
 
@@ -44,12 +40,12 @@ export default function BaselineManager({ testId, onClose }: BaselineManagerProp
     mutationFn: visualRegressionApi.deleteBaseline,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['baselines', testId] });
+      toast.success('Baseline deleted');
     },
   });
 
-  // Only show runs that have screenshot step results
+  // Show any run that has screenshot step results (not just passing runs)
   const runsWithScreenshots = runs?.filter((r) => {
-    if (r.status !== 'passed') return false;
     const stepResults = (r.stepResults as StepResult[]) || [];
     return stepResults.some((s) => s.screenshotPath);
   }) || [];
@@ -63,14 +59,6 @@ export default function BaselineManager({ testId, onClose }: BaselineManagerProp
             <X className="h-5 w-5" />
           </button>
         </div>
-
-        {/* Error message */}
-        {error && (
-          <div className="mb-4 flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
-            <p className="text-sm text-red-700">{error}</p>
-          </div>
-        )}
 
         {/* Set from run */}
         {runsWithScreenshots.length > 0 ? (

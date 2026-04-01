@@ -1,0 +1,138 @@
+▗ ▗   ▖ ▖  Claude Code v2.1.87
+           Opus 4.6 (1M context) · Claude Max
+  ▘▘ ▝▝    ~/Work/Development/qa-studio
+
+❯ I need to add this CLAUDE_CODE_PROMPT.md to gitignore                         
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ Update(.gitignore)
+  ⎿  Added 3 lines
+      28  
+      29  # TypeScript
+      30  *.tsbuildinfo
+      31 +                                                               
+      32 +# Claude                                                       
+      33 +CLAUDE_CODE_PROMPT.md                                          
+
+⏺ Done. Added CLAUDE_CODE_PROMPT.md to .gitignore.
+
+❯ check this project and tell me what we can enhance on it                      
+
+⏺ 3 Explore agents finished (ctrl+o to expand)
+   ├─ Explore backend codebase · 24 tool uses · 48.4k tokens
+   │  ⎿  Done
+   ├─ Explore frontend codebase · 27 tool uses · 75.4k tokens
+   │  ⎿  Done
+   └─ Explore project config and shared · 60 tool uses · 43.9k tokens
+      ⎿  Done
+
+⏺ Here's a comprehensive analysis of QA Studio with actionable enhancement
+  opportunities:
+
+  ---
+  QA Studio - Enhancement Opportunities
+
+  1. Error Handling & Resilience (High Priority)
+
+  - No error boundaries in React — an unhandled error crashes the entire app
+  - No toast/notification system — mutations succeed/fail silently
+  - SSE parsing errors silently swallowed — streaming failures are invisible
+  - No retry logic on API calls or flaky test runs
+  - Database operations lack try-catch — unhandled errors can crash the server
+
+  2. Testing & CI/CD (High Priority)
+
+  - Zero test coverage — no unit tests, integration tests, or E2E tests for the
+  app itself
+  - No CI/CD pipeline — no GitHub Actions, no linting checks, no automated
+  builds
+  - No linting/formatting — no ESLint, Prettier, or pre-commit hooks
+  - No .env.example — new contributors don't know what config is needed
+
+  3. Security (High Priority)
+
+  - No authentication/authorization — all endpoints are completely open
+  - No input sanitization — project variables are passed directly to page
+  context
+  - No rate limiting — could be abused to launch unlimited browser instances
+  - No CORS configuration beyond hardcoded localhost
+
+  4. Performance (Medium Priority)
+
+  - Analytics do full table scans — summary and trends endpoints loop through
+  all tests×runs (O(n×m))
+  - No database indexes on testId, projectId columns
+  - No pagination on test lists, run history, or analytics
+  - No React.memo or virtualization — long lists re-render entirely
+  - No code splitting/lazy loading — entire app loads upfront
+
+  5. Missing Features (Medium Priority)
+
+  ┌──────────────────────────┬──────────────────────────────────────────────┐
+  │         Feature          │                 Description                  │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Test search/filter       │ Can't find tests by name, status, or tags    │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Tags/labels              │ No way to categorize or organize tests       │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Test retry on failure    │ No automatic retry for flaky tests           │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Data-driven tests        │ No parameterization support                  │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Test scheduling          │ No cron-based automated runs                 │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Reporting/export         │ No HTML/PDF reports, no CSV/JSON export      │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Webhooks/notifications   │ No Slack, email, or CI integration           │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Keyboard shortcuts       │ No Cmd+S to save, Cmd+Enter to run           │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Dark mode                │ Tailwind is ready for it, just not           │
+  │                          │ implemented                                  │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Undo/redo in test        │ Lost work on mistakes                        │
+  │ builder                  │                                              │
+  └──────────────────────────┴──────────────────────────────────────────────┘
+
+  6. Code Quality (Medium Priority)
+
+  - Large components — TestBuilderPage is 619 lines, should be split
+  - Heavy use of any types — request.body as any, event: any
+  - Magic numbers — hardcoded concurrency (5), flow depth (10), loop iterations
+  (10)
+  - No custom hooks — repeated data-fetching patterns could be useTest(),
+  useAnalytics(), etc.
+  - Duplicated logic — batch runner and single test runner share code that
+  should be extracted
+
+  7. DevOps & Deployment (Lower Priority)
+
+  - No Dockerfile — can't containerize for deployment
+  - No Docker Compose — no easy local setup with dependencies
+  - No health check beyond /api/health — no readiness/liveness probes
+  - No structured logging — only one console.log in the entire backend
+  - No OpenAPI/Swagger — API is undocumented for external consumers
+
+  8. Accessibility (Lower Priority)
+
+  - Missing <label> elements on many inputs
+  - Modals don't trap focus
+  - No semantic landmarks (<main>, <nav>, <section>)
+  - Color contrast unverified
+
+  ---
+  Recommended Priority Order
+
+  1. Error boundaries + toast notifications — quick wins, big UX impact
+  2. ESLint + Prettier + pre-commit hooks — prevents quality regressions
+  3. Test search/filter + pagination — usability at scale
+  4. Authentication — required before any shared/production deployment
+  5. Database indexes + analytics optimization — performance
+  6. Test retry logic — core QA platform feature
+  7. Docker + CI/CD — deployment readiness
+  8. Reporting/export — standard expectation for QA tools
+
+  Which areas would you like to tackle first?
+
+✻ Churned for 2m 9s

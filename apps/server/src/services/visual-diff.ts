@@ -51,43 +51,48 @@ export function compareScreenshots(
   outputDir: string,
   threshold = 5
 ): DiffResult {
-  ensureDir(outputDir);
+  try {
+    ensureDir(outputDir);
 
-  let baselineImg: PNG = PNG.sync.read(readFileSync(baselinePath));
-  let actualImg: PNG = PNG.sync.read(readFileSync(actualPath));
+    let baselineImg: PNG = PNG.sync.read(readFileSync(baselinePath));
+    let actualImg: PNG = PNG.sync.read(readFileSync(actualPath));
 
-  // If dimensions differ, pad the smaller image to match the larger
-  const width = Math.max(baselineImg.width, actualImg.width);
-  const height = Math.max(baselineImg.height, actualImg.height);
+    // If dimensions differ, pad the smaller image to match the larger
+    const width = Math.max(baselineImg.width, actualImg.width);
+    const height = Math.max(baselineImg.height, actualImg.height);
 
-  baselineImg = padToSize(baselineImg, width, height);
-  actualImg = padToSize(actualImg, width, height);
+    baselineImg = padToSize(baselineImg, width, height);
+    actualImg = padToSize(actualImg, width, height);
 
-  const diff = new PNG({ width, height });
+    const diff = new PNG({ width, height });
 
-  const numDiffPixels = pixelmatch(
-    baselineImg.data,
-    actualImg.data,
-    diff.data,
-    width,
-    height,
-    {
-      threshold: 0.1,
-      alpha: 0.15,
-      diffColor: [255, 0, 0],
-      diffColorAlt: [255, 165, 0],
-    }
-  );
+    const numDiffPixels = pixelmatch(
+      baselineImg.data,
+      actualImg.data,
+      diff.data,
+      width,
+      height,
+      {
+        threshold: 0.1,
+        alpha: 0.15,
+        diffColor: [255, 0, 0],
+        diffColorAlt: [255, 165, 0],
+      }
+    );
 
-  const totalPixels = width * height;
-  const diffPercentage = Math.round((numDiffPixels / totalPixels) * 10000) / 100;
+    const totalPixels = width * height;
+    const diffPercentage = Math.round((numDiffPixels / totalPixels) * 10000) / 100;
 
-  const diffImagePath = join(outputDir, `diff-${Date.now()}.png`);
-  writeFileSync(diffImagePath, PNG.sync.write(diff));
+    const diffImagePath = join(outputDir, `diff-${Date.now()}.png`);
+    writeFileSync(diffImagePath, PNG.sync.write(diff));
 
-  return {
-    diffPercentage,
-    diffImagePath,
-    matches: diffPercentage <= threshold,
-  };
+    return {
+      diffPercentage,
+      diffImagePath,
+      matches: diffPercentage <= threshold,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Visual diff failed: ${message}`);
+  }
 }

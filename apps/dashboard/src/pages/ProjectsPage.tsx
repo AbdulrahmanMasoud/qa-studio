@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Plus, FolderOpen, Trash2, ExternalLink } from 'lucide-react';
+import { toast } from 'sonner';
 import { projectsApi } from '../lib/api';
 import type { Project } from '@qa-studio/shared';
 
@@ -23,6 +24,7 @@ export default function ProjectsPage() {
       setShowCreate(false);
       setNewProjectName('');
       setNewProjectUrl('');
+      toast.success('Project created');
     },
   });
 
@@ -30,6 +32,7 @@ export default function ProjectsPage() {
     mutationFn: projectsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('Project deleted');
     },
   });
 

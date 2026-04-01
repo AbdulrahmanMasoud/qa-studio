@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Builder - QA Studio Docs</title>
+  <meta name="description" content="Learn the 3-panel test builder interface with drag-and-drop steps, selector helpers, live execution, and test configuration.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Test Builder</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Test Builder</h1>
+          <p class="subtitle">The visual test builder is a 3-panel interface for creating, editing, and running browser tests. Drag and drop steps, configure selectors, and watch your tests execute in real-time.</p>
+
+          <h2 id="overview">Overview</h2>
+
+          <p>The test builder is the primary workspace in QA Studio. It uses a three-panel layout designed for efficient test creation:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Panel</th>
+                <th>Position</th>
+                <th>Purpose</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Action Palette</strong></td>
+                <td>Left</td>
+                <td>Browse and add available actions to your test</td>
+              </tr>
+              <tr>
+                <td><strong>Steps List</strong></td>
+                <td>Center</td>
+                <td>View, reorder, and manage the sequence of test steps</td>
+              </tr>
+              <tr>
+                <td><strong>Step Editor</strong></td>
+                <td>Right</td>
+                <td>Configure the properties of the currently selected step</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>Above the panels is a top toolbar that contains the test name, save button, run button, recorder toggle, and test configuration options.</p>
+
+          <h2 id="action-palette">Action Palette (Left Panel)</h2>
+
+          <p>The action palette provides all available step types organized into logical sections. Click any action to instantly append it to the end of your steps list.</p>
+
+          <h3 id="standard-actions">Standard Actions</h3>
+
+          <p>These are the core browser interaction actions:</p>
+
+          <ul>
+            <li><strong>Navigate</strong> &mdash; Go to a URL</li>
+            <li><strong>Click</strong> &mdash; Click an element on the page</li>
+            <li><strong>Fill</strong> &mdash; Type text into an input field</li>
+            <li><strong>Select</strong> &mdash; Choose an option from a dropdown</li>
+            <li><strong>Check</strong> &mdash; Check a checkbox</li>
+            <li><strong>Uncheck</strong> &mdash; Uncheck a checkbox</li>
+            <li><strong>Hover</strong> &mdash; Hover over an element</li>
+            <li><strong>Press Key</strong> &mdash; Press a keyboard key (Enter, Tab, Escape, etc.)</li>
+            <li><strong>Wait</strong> &mdash; Wait for time, element, or URL condition</li>
+            <li><strong>Screenshot</strong> &mdash; Capture a screenshot for visual regression</li>
+            <li><strong>Assert</strong> &mdash; Verify page state (text, URL, title, visibility, value)</li>
+          </ul>
+
+          <h3 id="flow-actions">Flow Actions</h3>
+
+          <ul>
+            <li><strong>Use Flow</strong> &mdash; Insert a reusable flow (shared step sequence) from your project</li>
+          </ul>
+
+          <h3 id="control-flow-actions">Control Flow Actions</h3>
+
+          <p>These actions control conditional execution and looping:</p>
+
+          <ul>
+            <li><strong>If</strong> &mdash; Start a conditional block</li>
+            <li><strong>Else</strong> &mdash; Define the alternate branch</li>
+            <li><strong>End If</strong> &mdash; Close the conditional block</li>
+            <li><strong>Loop</strong> &mdash; Start a loop with a max iteration count</li>
+            <li><strong>End Loop</strong> &mdash; Close the loop block</li>
+          </ul>
+
+          <p>See the <a href="control-flow.html">Control Flow</a> page for detailed usage of conditional and loop actions.</p>
+
+          <h2 id="steps-list">Steps List (Center Panel)</h2>
+
+          <p>The center panel displays all steps in your test as a vertical list of visual step cards. This is the heart of the test builder where you organize your test flow.</p>
+
+          <h3 id="step-cards">Step Cards</h3>
+
+          <p>Each step is rendered as a card showing:</p>
+
+          <ul>
+            <li><strong>Action icon</strong> &mdash; A visual icon representing the action type (e.g., a cursor for click, a keyboard for fill)</li>
+            <li><strong>Action label</strong> &mdash; The human-readable action name</li>
+            <li><strong>Summary</strong> &mdash; A brief description of the step's configuration (e.g., the URL for navigate, the selector for click)</li>
+            <li><strong>Step number</strong> &mdash; The sequential position in the test</li>
+            <li><strong>Status indicator</strong> &mdash; Visible during and after test runs (pass/fail/running/skipped)</li>
+          </ul>
+
+          <h3 id="drag-and-drop">Drag and Drop</h3>
+
+          <p>Steps can be reordered by dragging them to a new position. QA Studio uses <strong>dnd-kit</strong> for smooth, accessible drag-and-drop interactions. Grab the drag handle on the left side of any step card and move it to the desired position.</p>
+
+          <div class="callout tip">
+            <div class="callout-title">Tip</div>
+            <p>When dragging control flow steps (If, Else, End If, Loop, End Loop), be mindful of their nesting structure. The builder does not enforce valid nesting order during drag, so ensure your If/End If and Loop/End Loop pairs remain properly matched after reordering.</p>
+          </div>
+
+          <h3 id="nesting-indentation">Nesting Indentation</h3>
+
+          <p>Steps inside control flow blocks (between If/End If or Loop/End Loop) are automatically indented to visualize the nesting hierarchy. This makes it easy to see which steps belong to which conditional branch or loop body at a glance.</p>
+
+          <p>The indentation depth increases with each level of nesting. For example, steps inside a loop that is itself inside an if-block will be indented two levels deep.</p>
+
+          <h3 id="status-indicators">Status Indicators During Runs</h3>
+
+          <p>When a test is executing, each step card displays a real-time status indicator:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Indicator</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Pending</strong></td>
+                <td>No indicator</td>
+                <td>Step has not yet been reached</td>
+              </tr>
+              <tr>
+                <td><strong>Running</strong></td>
+                <td>Blue spinner</td>
+                <td>Step is currently executing</td>
+              </tr>
+              <tr>
+                <td><strong>Passed</strong></td>
+                <td>Green checkmark</td>
+                <td>Step completed successfully</td>
+              </tr>
+              <tr>
+                <td><strong>Failed</strong></td>
+                <td>Red X icon</td>
+                <td>Step encountered an error (error message shown below the card)</td>
+              </tr>
+              <tr>
+                <td><strong>Skipped</strong></td>
+                <td>Gray dash</td>
+                <td>Step was skipped (e.g., inside a false conditional branch)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2 id="step-editor">Step Editor (Right Panel)</h2>
+
+          <p>Clicking any step card in the center panel opens its configuration in the right panel. The editor displays different fields depending on the action type of the selected step.</p>
+
+          <h3 id="dynamic-fields">Dynamic Fields</h3>
+
+          <p>Each action type has its own set of configurable fields. For example:</p>
+
+          <ul>
+            <li><strong>Navigate</strong> shows a URL input field</li>
+            <li><strong>Click</strong> shows a selector input with mode dropdown</li>
+            <li><strong>Fill</strong> shows both a selector input and a value text field</li>
+            <li><strong>Assert</strong> shows assert type, condition, and value dropdowns</li>
+            <li><strong>Wait</strong> shows wait type dropdown with conditional fields (time, selector, or URL)</li>
+            <li><strong>If</strong> shows condition type, and relevant condition fields</li>
+            <li><strong>Loop</strong> shows condition type, condition fields, and max iterations</li>
+          </ul>
+
+          <p>All text fields that accept user input support <a href="environment-variables.html">environment variable</a> substitution using the <code>{{variableName}}</code> syntax.</p>
+
+          <h3 id="selector-input">Selector Input</h3>
+
+          <p>For actions that target page elements (Click, Fill, Select, Check, Uncheck, Hover), the step editor provides a selector input with a <strong>mode dropdown</strong>. The mode determines how Playwright locates the element on the page.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Mode</th>
+                <th>Input Example</th>
+                <th>Playwright Equivalent</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>css</strong></td>
+                <td><code>#login-btn</code></td>
+                <td><code>page.locator('#login-btn')</code></td>
+                <td>CSS selector. Supports any valid CSS selector syntax.</td>
+              </tr>
+              <tr>
+                <td><strong>text</strong></td>
+                <td><code>Sign In</code></td>
+                <td><code>page.getByText('Sign In')</code></td>
+                <td>Matches elements by their visible text content.</td>
+              </tr>
+              <tr>
+                <td><strong>role</strong></td>
+                <td><code>button:Submit</code></td>
+                <td><code>page.getByRole('button', { name: 'Submit' })</code></td>
+                <td>ARIA role with optional accessible name (separated by colon).</td>
+              </tr>
+              <tr>
+                <td><strong>placeholder</strong></td>
+                <td><code>Enter email</code></td>
+                <td><code>page.getByPlaceholder('Enter email')</code></td>
+                <td>Matches input elements by their placeholder text.</td>
+              </tr>
+              <tr>
+                <td><strong>label</strong></td>
+                <td><code>Email Address</code></td>
+                <td><code>page.getByLabel('Email Address')</code></td>
+                <td>Matches form elements by their associated label.</td>
+              </tr>
+              <tr>
+                <td><strong>testid</strong></td>
+                <td><code>submit-btn</code></td>
+                <td><code>page.getByTestId('submit-btn')</code></td>
+                <td>Matches elements by <code>data-testid</code> attribute. Most resilient to UI changes.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout tip">
+            <div class="callout-title">Tip</div>
+            <p>The <strong>testid</strong> mode is the most reliable selector strategy because <code>data-testid</code> attributes are not affected by CSS refactors, text changes, or layout shifts. If you control the source code of the application under test, adding <code>data-testid</code> attributes to key elements is strongly recommended.</p>
+          </div>
+
+          <h2 id="save-and-run">Save &amp; Run Workflow</h2>
+
+          <p>The top toolbar provides Save and Run buttons that work together to ensure your tests are always up to date before execution.</p>
+
+          <h3 id="auto-save">Auto-Save Before Run</h3>
+
+          <p>When you click <strong>Run</strong>, QA Studio automatically saves the current test state before starting execution. This means you never accidentally run a stale version of your test. If you want to save without running, the dedicated <strong>Save</strong> button persists your changes immediately.</p>
+
+          <h3 id="unsaved-changes">Unsaved Changes Indicator</h3>
+
+          <p>When you make changes to a test that have not been saved, a visual indicator appears next to the test name in the toolbar. This helps you keep track of your editing state. The indicator disappears after saving or running the test.</p>
+
+          <h2 id="live-execution">Live Execution Progress</h2>
+
+          <p>Test execution uses <strong>Server-Sent Events (SSE)</strong> streaming to deliver real-time progress updates from the server to the dashboard. As each step executes, its status is pushed to the browser immediately.</p>
+
+          <h3 id="sse-streaming">Step-by-Step SSE Streaming</h3>
+
+          <p>When a test run starts, the dashboard opens an SSE connection to the server. The server sends events as JSON messages in the format <code>data: {JSON}\n\n</code> for each step transition:</p>
+
+          <div class="code-block" data-lang="json">
+            <div class="code-header">
+              <span class="code-lang">SSE Event Example</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{
+  "type": "step-start",
+  "stepIndex": 2,
+  "action": "click",
+  "timestamp": "2025-01-15T10:30:00.123Z"
+}
+
+{
+  "type": "step-end",
+  "stepIndex": 2,
+  "status": "passed",
+  "duration": 245,
+  "timestamp": "2025-01-15T10:30:00.368Z"
+}</code></pre>
+          </div>
+
+          <p>The dashboard reads the SSE stream with a <code>ReadableStream</code> reader and updates each step card's status indicator in real-time. This gives you immediate visual feedback about which step is running, which have passed, and where failures occur.</p>
+
+          <h3 id="execution-states">Step Execution States</h3>
+
+          <p>During a run, steps transition through these states in order:</p>
+
+          <ol>
+            <li><strong>Pending</strong> &mdash; Initial state, not yet reached by the runner</li>
+            <li><strong>Running</strong> &mdash; The runner is actively executing this step</li>
+            <li><strong>Passed / Failed / Skipped</strong> &mdash; Final state after execution completes</li>
+          </ol>
+
+          <p>If a step fails, the runner stops execution (unless the step is inside a conditional branch). The error message from Playwright is displayed below the failed step card.</p>
+
+          <h2 id="test-configuration">Test Configuration</h2>
+
+          <p>Each test has its own configuration that controls how it executes. These settings are accessible from the configuration section in the test builder toolbar.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Setting</th>
+                <th>Default</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Browser</strong></td>
+                <td>Chromium</td>
+                <td>The browser engine to use. Options: Chromium, Firefox, WebKit.</td>
+              </tr>
+              <tr>
+                <td><strong>Viewport Width</strong></td>
+                <td>1280</td>
+                <td>Browser viewport width in pixels.</td>
+              </tr>
+              <tr>
+                <td><strong>Viewport Height</strong></td>
+                <td>720</td>
+                <td>Browser viewport height in pixels.</td>
+              </tr>
+              <tr>
+                <td><strong>Timeout</strong></td>
+                <td>30000</td>
+                <td>Default timeout per action in milliseconds. Playwright waits up to this duration for elements to become actionable.</td>
+              </tr>
+              <tr>
+                <td><strong>Headless</strong></td>
+                <td>true</td>
+                <td>Run the browser without a visible window. Set to false to watch the browser during execution.</td>
+              </tr>
+              <tr>
+                <td><strong>Real Browser</strong></td>
+                <td>false</td>
+                <td>Use a real Chrome installation instead of Playwright's bundled Chromium. Useful for bypassing bot detection.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout info">
+            <div class="callout-title">Info</div>
+            <p>Test configuration is saved per-test, so different tests in the same project can use different browsers, viewports, and timeout settings. See <a href="browser-config.html">Browser Configuration</a> for more advanced browser settings including geolocation and permissions.</p>
+          </div>
+
+          <h2 id="keyboard-shortcuts">Keyboard Shortcuts</h2>
+
+          <p>The test builder supports several keyboard shortcuts for faster editing:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Shortcut</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><kbd>Ctrl</kbd> + <kbd>S</kbd> / <kbd>&#8984;</kbd> + <kbd>S</kbd></td>
+                <td>Save the current test</td>
+              </tr>
+              <tr>
+                <td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+                <td>Delete the selected step</td>
+              </tr>
+              <tr>
+                <td><kbd>Ctrl</kbd> + <kbd>D</kbd> / <kbd>&#8984;</kbd> + <kbd>D</kbd></td>
+                <td>Duplicate the selected step</td>
+              </tr>
+              <tr>
+                <td><kbd>Escape</kbd></td>
+                <td>Deselect the current step</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="page-nav">
+            <a href="getting-started.html">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Getting Started</span>
+            </a>
+            <a href="recording.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Recording &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>

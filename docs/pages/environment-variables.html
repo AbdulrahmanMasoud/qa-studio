@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Environment Variables - QA Studio Docs</title>
+  <meta name="description" content="Configure project-level key-value variables for dynamic test configuration. Use {{key}} substitution syntax in any step field.">
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/docs.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+      <a href="../index.html" class="sidebar-header">
+        <img src="../assets/logo.svg" alt="QA Studio">
+        <h1>QA Studio</h1>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Getting Started</div>
+          <a href="getting-started.html" class="nav-link">Introduction</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Core Features</div>
+          <a href="test-builder.html" class="nav-link">Test Builder</a>
+          <a href="recording.html" class="nav-link">Recording</a>
+          <a href="control-flow.html" class="nav-link">Control Flow</a>
+          <a href="reusable-flows.html" class="nav-link">Reusable Flows</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Testing</div>
+          <a href="visual-regression.html" class="nav-link">Visual Regression</a>
+          <a href="test-suites.html" class="nav-link">Test Suites</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <a href="environment-variables.html" class="nav-link active">Environment Variables</a>
+          <a href="browser-config.html" class="nav-link">Browser Configuration</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Automation</div>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="scheduled-runs.html" class="nav-link">Scheduled Runs</a>
+          <a href="export-import.html" class="nav-link">Export &amp; Import</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Reference</div>
+          <a href="actions-reference.html" class="nav-link">Actions Reference</a>
+          <a href="api-reference.html" class="nav-link">API Reference</a>
+          <a href="self-hosting.html" class="nav-link">Self-Hosting</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="../index.html">Docs</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Environment Variables</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="search-btn" id="search-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search docs...</span>
+            <kbd>&#8984;K</kbd>
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>Environment Variables</h1>
+          <p class="subtitle">Define project-level key-value pairs for dynamic test configuration. Use variables to switch between environments, manage credentials, and keep your tests flexible without editing step data.</p>
+
+          <h2 id="overview">Overview</h2>
+          <p>Environment variables are <strong>project-level key-value pairs</strong> that inject dynamic values into your tests at runtime. Instead of hardcoding URLs, usernames, or configuration values directly into test steps, you define them as variables and reference them using the <code>{{key}}</code> substitution syntax.</p>
+          <p>This approach provides several benefits:</p>
+          <ul>
+            <li><strong>Environment switching</strong> &mdash; change a single variable to point all tests at staging, production, or a local dev server</li>
+            <li><strong>Credential management</strong> &mdash; keep usernames and passwords in one place instead of scattered across test steps</li>
+            <li><strong>Configuration flexibility</strong> &mdash; update test behavior without modifying test definitions</li>
+            <li><strong>Reusability</strong> &mdash; the same test works across different environments by swapping variable values</li>
+          </ul>
+
+          <h2 id="managing-variables">Managing Variables</h2>
+          <p>Environment variables are managed through the <strong>EnvironmentVariablesModal</strong>, accessible from the Tests page in your project.</p>
+
+          <div class="steps">
+            <div class="step">
+              <h4>Open the Variables Modal</h4>
+              <p>From the Tests page, click the <strong>Environment Variables</strong> button (or gear/settings icon). This opens the EnvironmentVariablesModal, which displays all variables currently defined for the project.</p>
+            </div>
+
+            <div class="step">
+              <h4>Add a Variable</h4>
+              <p>Click <strong>Add Variable</strong>. Enter a <strong>key</strong> (the name you will reference in tests) and a <strong>value</strong> (the string that will be substituted at runtime). Keys should be descriptive and use camelCase or SCREAMING_SNAKE_CASE by convention.</p>
+            </div>
+
+            <div class="step">
+              <h4>Edit or Delete</h4>
+              <p>To modify an existing variable, update its key or value directly in the table. To remove a variable, click the delete button next to it. Changes are not persisted until you save.</p>
+            </div>
+
+            <div class="step">
+              <h4>Save</h4>
+              <p>Click <strong>Save</strong> to persist all changes to the project. The updated variables will take effect the next time any test in the project is run.</p>
+            </div>
+          </div>
+
+          <h2 id="substitution-syntax">Substitution Syntax</h2>
+          <p>To reference a variable in a test step, use double curly braces around the key name:</p>
+
+          <div class="code-block" data-lang="text">
+            <div class="code-header">
+              <span class="code-lang">syntax</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{{variableName}}</code></pre>
+          </div>
+
+          <p>The runner replaces the entire <code>{{variableName}}</code> token with the variable's value before executing the step. Substitution is purely textual &mdash; the token is replaced with the string value as-is.</p>
+
+          <h3 id="where-substitution-works">Where Substitution Works</h3>
+          <p>Variable substitution is applied to <strong>all text-based step fields</strong> before execution. This includes:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Example Usage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>URL fields</strong></td>
+                <td><code>{{baseUrl}}/login</code> in Navigate steps</td>
+              </tr>
+              <tr>
+                <td><strong>Selector fields</strong></td>
+                <td><code>{{loginFormSelector}}</code> in Click, Fill, Assert steps</td>
+              </tr>
+              <tr>
+                <td><strong>Fill values</strong></td>
+                <td><code>{{username}}</code> in the value field of Fill steps</td>
+              </tr>
+              <tr>
+                <td><strong>Assert values</strong></td>
+                <td><code>{{expectedTitle}}</code> in Assert-Text or Assert-Value steps</td>
+              </tr>
+              <tr>
+                <td><strong>Wait values</strong></td>
+                <td><code>{{loadTimeout}}</code> in Wait steps (converted to number at runtime)</td>
+              </tr>
+              <tr>
+                <td><strong>All other text fields</strong></td>
+                <td>Any string field in any step type supports substitution</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 id="how-substitution-works">How Substitution Works</h3>
+          <p>Before test execution begins, the runner performs variable substitution as a preprocessing step:</p>
+          <ol>
+            <li>The runner loads all environment variables defined on the project</li>
+            <li>For each step in the test (including steps resolved from <a href="reusable-flows.html">reusable flows</a>), it scans all text fields</li>
+            <li>Every occurrence of <code>{{key}}</code> is replaced with the corresponding variable value</li>
+            <li>If a <code>{{key}}</code> has no matching variable, it is left as-is (the literal string <code>{{key}}</code> remains)</li>
+            <li>The substituted steps are then executed normally</li>
+          </ol>
+
+          <h2 id="examples">Examples</h2>
+
+          <h3 id="example-base-url">Example: Base URL</h3>
+          <p>Set a variable for your application's base URL, then reference it in Navigate steps:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Variable Key</th>
+                <th>Variable Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>baseUrl</code></td>
+                <td><code>https://staging.example.com</code></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>In your Navigate step, set the URL to:</p>
+
+          <div class="code-block" data-lang="text">
+            <div class="code-header">
+              <span class="code-lang">step field</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{{baseUrl}}/login</code></pre>
+          </div>
+
+          <p>At runtime, this resolves to <code>https://staging.example.com/login</code>. To switch to production, change the variable value to <code>https://app.example.com</code> and re-run &mdash; no test edits needed.</p>
+
+          <h3 id="example-credentials">Example: Login Credentials</h3>
+          <p>Store credentials as variables for use in Fill steps:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Variable Key</th>
+                <th>Variable Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>username</code></td>
+                <td><code>admin@example.com</code></td>
+              </tr>
+              <tr>
+                <td><code>password</code></td>
+                <td><code>TestPassword123!</code></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>In your Fill steps:</p>
+          <ul>
+            <li>Fill <code>#email</code> with <code>{{username}}</code></li>
+            <li>Fill <code>#password</code> with <code>{{password}}</code></li>
+          </ul>
+          <p>This keeps credentials centralized and makes it easy to update them without editing individual tests or flows.</p>
+
+          <h3 id="example-multiple-variables">Example: Multiple Variables in One Field</h3>
+          <p>You can use multiple variables in a single field:</p>
+
+          <div class="code-block" data-lang="text">
+            <div class="code-header">
+              <span class="code-lang">step field</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>{{baseUrl}}/api/v{{apiVersion}}/users</code></pre>
+          </div>
+
+          <p>With <code>baseUrl</code> = <code>https://staging.example.com</code> and <code>apiVersion</code> = <code>2</code>, this resolves to <code>https://staging.example.com/api/v2/users</code>.</p>
+
+          <h2 id="control-flow-conditions">Variables in Control Flow Conditions</h2>
+          <p>Environment variables integrate with <a href="control-flow.html">control flow</a> conditions. Two condition types work directly with variables:</p>
+          <ul>
+            <li><strong>variable-equals</strong> &mdash; evaluates to true if the specified variable's value exactly matches a given string</li>
+            <li><strong>variable-contains</strong> &mdash; evaluates to true if the specified variable's value contains a given substring</li>
+          </ul>
+          <p>This lets you create conditional test logic based on the current environment. For example, you might skip certain steps when running against production by checking an <code>environment</code> variable:</p>
+
+          <div class="code-block" data-lang="text">
+            <div class="code-header">
+              <span class="code-lang">pseudo-steps</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code>If: variable-equals "environment" = "staging"
+  Fill #seed-data with "test-data-001"
+  Click button#seed
+End If</code></pre>
+          </div>
+
+          <p>In this example, the seed data steps only execute when the <code>environment</code> variable is set to <code>staging</code>, allowing the same test to run safely in both staging and production.</p>
+
+          <h2 id="scope-and-sharing">Scope and Sharing</h2>
+
+          <div class="callout info">
+            <div class="callout-title">Project Scope</div>
+            <p>Environment variables are stored on the <strong>project</strong> and are shared across all tests in that project. Every test and every <a href="reusable-flows.html">reusable flow</a> within the project has access to the same set of variables. Variables are not shared across projects.</p>
+          </div>
+
+          <p>This means:</p>
+          <ul>
+            <li>Changing a variable value affects every test in the project on the next run</li>
+            <li>All tests in a project share the same environment configuration</li>
+            <li>If two projects need different variable sets, they are completely independent</li>
+          </ul>
+
+          <h2 id="best-practices">Best Practices</h2>
+
+          <div class="callout tip">
+            <div class="callout-title">Recommended Variable Strategy</div>
+            <p>Use environment variables for any value that might change between environments (URLs, credentials, feature flags) so you can switch environments by changing variables, not by editing tests.</p>
+          </div>
+
+          <ul>
+            <li><strong>Use for environment-specific values</strong> &mdash; URLs, API endpoints, hostnames, and ports that differ between dev, staging, and production.</li>
+            <li><strong>Centralize credentials</strong> &mdash; store test usernames, passwords, and API keys as variables. Update them in one place when they change.</li>
+            <li><strong>Feature flags</strong> &mdash; use variables to control test behavior based on feature availability. Combine with <a href="control-flow.html">control flow conditions</a> to skip or include steps.</li>
+            <li><strong>Descriptive key names</strong> &mdash; use clear names like <code>baseUrl</code>, <code>adminEmail</code>, <code>apiTimeout</code> rather than abbreviations.</li>
+            <li><strong>Document your variables</strong> &mdash; maintain a consistent set of variable names across projects so team members know what to expect.</li>
+            <li><strong>Avoid hardcoded values in steps</strong> &mdash; if a value appears in multiple steps and might change, extract it into a variable.</li>
+          </ul>
+
+          <div class="page-nav">
+            <a href="test-suites.html" class="prev">
+              <span class="page-nav-label">Previous</span>
+              <span class="page-nav-title">&larr; Test Suites</span>
+            </a>
+            <a href="browser-config.html" class="next">
+              <span class="page-nav-label">Next</span>
+              <span class="page-nav-title">Browser Configuration &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="toc" id="toc">
+          <div class="toc-title">On this page</div>
+          <div class="toc-links"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off">
+      </div>
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <script src="../scripts/docs.js"></script>
+</body>
+</html>
