@@ -328,8 +328,13 @@ const CAPTURE_SCRIPT = `
 })();
 `;
 
-export async function startRecording(testId: string, startUrl: string): Promise<string> {
+export interface RecorderOptions {
+  recordDelays?: boolean;
+}
+
+export async function startRecording(testId: string, startUrl: string, options: RecorderOptions = {}): Promise<string> {
   const sessionId = generateId();
+  const { recordDelays = false } = options;
 
   const browser = await chromium.launch({
     headless: false,
@@ -347,15 +352,36 @@ export async function startRecording(testId: string, startUrl: string): Promise<
   const page = await context.newPage();
   const emitter = new EventEmitter();
 
+  // Track timing between steps to insert natural wait delays
+  let lastStepTime = Date.now();
+  const MIN_DELAY = 500; // Only insert waits for gaps > 500ms
+
   // Expose capture function from injected script → Node
   await page.exposeFunction('__qaStudioCapture', (data: string) => {
     try {
       const parsed = JSON.parse(data);
+
+      // Insert a wait step if recording delays is enabled
+      if (recordDelays) {
+        const now = Date.now();
+        const gap = now - lastStepTime;
+        if (gap > MIN_DELAY) {
+          const waitStep: TestStep = {
+            id: generateId(),
+            action: 'wait',
+            waitType: 'time',
+            value: gap,
+          } as TestStep;
+          emitter.emit('step', waitStep);
+        }
+      }
+
       const step: TestStep = {
         id: generateId(),
         ...parsed,
       };
       emitter.emit('step', step);
+      lastStepTime = Date.now();
     } catch {
       // ignore malformed data
     }
@@ -394,6 +420,8 @@ export async function startRecording(testId: string, startUrl: string): Promise<
           action: 'goto',
           url,
         } as TestStep);
+        // Reset timing after navigation so first action doesn't get a huge wait
+        lastStepTime = Date.now();
         navDebounceTimer = null;
       }, 500);
     }

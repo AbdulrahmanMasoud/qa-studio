@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Video, StopCircle, Loader2, Globe, X, Zap } from 'lucide-react';
+import { Video, StopCircle, Loader2, Globe, X, Zap, Timer } from 'lucide-react';
+import clsx from 'clsx';
 
 interface RecorderBarProps {
   isRecording: boolean;
   isStarting: boolean;
   recordedStepCount: number;
   startUrl: string;
+  recordDelays: boolean;
   onStartUrlChange: (url: string) => void;
+  onRecordDelaysChange: (value: boolean) => void;
   onStart: () => void;
   onStop: () => void;
   onClose: () => void;
@@ -34,7 +37,9 @@ export default function RecorderBar({
   isStarting,
   recordedStepCount,
   startUrl,
+  recordDelays,
   onStartUrlChange,
+  onRecordDelaysChange,
   onStart,
   onStop,
   onClose,
@@ -121,6 +126,31 @@ export default function RecorderBar({
             autoFocus
           />
         </div>
+
+        {/* Record delays toggle */}
+        <label
+          className="flex items-center gap-2 cursor-pointer select-none"
+          title="Capture natural timing between actions as Wait steps"
+        >
+          <Timer className="h-4 w-4 text-gray-400" />
+          <span className="text-sm text-gray-600 whitespace-nowrap">Record Delays</span>
+          <button
+            role="switch"
+            aria-checked={recordDelays}
+            onClick={() => onRecordDelaysChange(!recordDelays)}
+            className={clsx(
+              'relative inline-flex h-5 w-9 flex-shrink-0 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2',
+              recordDelays ? 'bg-red-600' : 'bg-gray-300'
+            )}
+          >
+            <span
+              className={clsx(
+                'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out mt-0.5',
+                recordDelays ? 'translate-x-4 ml-0.5' : 'translate-x-0 ml-0.5'
+              )}
+            />
+          </button>
+        </label>
 
         {/* Start button */}
         <button

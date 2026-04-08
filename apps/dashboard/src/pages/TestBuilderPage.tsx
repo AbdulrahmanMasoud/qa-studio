@@ -77,6 +77,7 @@ export default function TestBuilderPage() {
   const [isRecorderOpen, setIsRecorderOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isRecorderStarting, setIsRecorderStarting] = useState(false);
+  const [recordDelays, setRecordDelays] = useState(false);
   const [recorderSessionId, setRecorderSessionId] = useState<string | null>(null);
   const [recordedStepCount, setRecordedStepCount] = useState(0);
   const [recorderUrl, setRecorderUrl] = useState('');
@@ -186,7 +187,7 @@ export default function TestBuilderPage() {
     if (!testId || !recorderUrl) return;
     setIsRecorderStarting(true);
     try {
-      const { sessionId } = await recorderApi.start(testId, recorderUrl);
+      const { sessionId } = await recorderApi.start(testId, recorderUrl, { recordDelays });
       setRecorderSessionId(sessionId);
       setIsRecording(true);
       setRecordedStepCount(0);
@@ -243,7 +244,7 @@ export default function TestBuilderPage() {
     } finally {
       setIsRecorderStarting(false);
     }
-  }, [testId, recorderUrl]);
+  }, [testId, recorderUrl, recordDelays]);
 
   const handleStopRecording = useCallback(async () => {
     if (recorderSessionId) {
@@ -579,7 +580,9 @@ export default function TestBuilderPage() {
           isStarting={isRecorderStarting}
           recordedStepCount={recordedStepCount}
           startUrl={recorderUrl}
+          recordDelays={recordDelays}
           onStartUrlChange={setRecorderUrl}
+          onRecordDelaysChange={setRecordDelays}
           onStart={handleStartRecording}
           onStop={handleStopRecording}
           onClose={() => setIsRecorderOpen(false)}

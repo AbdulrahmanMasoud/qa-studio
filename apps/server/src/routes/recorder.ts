@@ -4,14 +4,14 @@ import { startRecording, stopRecording, getSession } from '../services/recorder.
 export async function recorderRoutes(app: FastifyInstance) {
   // Start recording session
   app.post('/api/recorder/start', async (request, reply) => {
-    const { testId, startUrl } = request.body as { testId: string; startUrl: string };
+    const { testId, startUrl, recordDelays } = request.body as { testId: string; startUrl: string; recordDelays?: boolean };
 
     if (!testId || !startUrl) {
       return reply.status(400).send({ error: 'testId and startUrl are required' });
     }
 
     try {
-      const sessionId = await startRecording(testId, startUrl);
+      const sessionId = await startRecording(testId, startUrl, { recordDelays: recordDelays ?? false });
       return { sessionId };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to start recording';
