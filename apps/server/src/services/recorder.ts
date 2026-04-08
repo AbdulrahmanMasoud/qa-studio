@@ -21,51 +21,94 @@ const CAPTURE_SCRIPT = `
   let inputTimer = null;
   let lastInputSelector = null;
 
-  function getSelector(el) {
-    // Priority 1: data-testid
-    if (el.dataset && el.dataset.testid) {
-      return 'data-testid=' + el.dataset.testid;
+  // --- Helpers ---
+
+  function isUnique(sel, el) {
+    try {
+      const m = document.querySelectorAll(sel);
+      return m.length === 1 && m[0] === el;
+    } catch { return false; }
+  }
+
+  function isDynamic(name) {
+    if (!name) return true;
+    // CSS Modules: Component_class__hash
+    if (/^[A-Za-z][\\w]*_[\\w]+__[\\w]{5,}$/.test(name)) return true;
+    // Styled-components / Emotion / MUI etc.
+    if (/^(css|sc|emotion|styled|jss|mui|chakra)-[a-zA-Z0-9]{4,}$/i.test(name)) return true;
+    // Generic hash suffix: ends with - or _ followed by 6+ alphanumeric
+    if (/[-_][a-zA-Z0-9]{6,}$/.test(name)) return true;
+    // Very short / minified (e.g. a0, _1, x3)
+    if (/^[a-zA-Z_]{1,2}[0-9]+$/.test(name)) return true;
+    // Starts with double underscore
+    if (name.startsWith('__')) return true;
+    return false;
+  }
+
+  function escAttr(val) {
+    return val.replace(/\\\\/g, '\\\\\\\\').replace(/"/g, '\\\\"');
+  }
+
+  function getStableClasses(el) {
+    if (!el.className || typeof el.className !== 'string') return [];
+    return el.className.trim().split(/\\s+/).filter(function(c) {
+      return c.length > 0 && !isDynamic(c);
+    });
+  }
+
+  function tryClassSelector(el) {
+    const classes = getStableClasses(el).slice(0, 4);
+    if (classes.length === 0) return null;
+    const tag = el.tagName.toLowerCase();
+
+    // Try single class
+    for (var i = 0; i < classes.length; i++) {
+      var sel = '.' + CSS.escape(classes[i]);
+      if (isUnique(sel, el)) return sel;
     }
-    // Priority 2: id
-    if (el.id) {
-      return '#' + CSS.escape(el.id);
+    // Try tag + single class
+    for (var i = 0; i < classes.length; i++) {
+      var sel = tag + '.' + CSS.escape(classes[i]);
+      if (isUnique(sel, el)) return sel;
     }
-    // Priority 3: role + accessible name
-    const role = el.getAttribute('role') || implicitRole(el);
-    const name = el.getAttribute('aria-label') ||
-      el.textContent?.trim().slice(0, 50);
-    if (role && name) {
-      return 'role=' + role + '[name="' + name.replace(/"/g, '\\\\"') + '"]';
+    // Try two-class combos
+    for (var i = 0; i < classes.length; i++) {
+      for (var j = i + 1; j < classes.length; j++) {
+        var sel = '.' + CSS.escape(classes[i]) + '.' + CSS.escape(classes[j]);
+        if (isUnique(sel, el)) return sel;
+      }
     }
-    // Priority 4: placeholder
-    if (el.placeholder) {
-      return '[placeholder="' + el.placeholder.replace(/"/g, '\\\\"') + '"]';
+    // Try tag + two-class combos
+    for (var i = 0; i < classes.length; i++) {
+      for (var j = i + 1; j < classes.length; j++) {
+        var sel = tag + '.' + CSS.escape(classes[i]) + '.' + CSS.escape(classes[j]);
+        if (isUnique(sel, el)) return sel;
+      }
     }
-    // Priority 5: label
-    if (el.id) {
-      const label = document.querySelector('label[for="' + CSS.escape(el.id) + '"]');
-      if (label) return 'label=' + label.textContent.trim();
-    }
-    // Priority 6: text content (for non-input elements)
-    if (!isInputElement(el) && el.textContent?.trim()) {
-      const text = el.textContent.trim();
-      if (text.length <= 50) return 'text=' + text;
-    }
-    // Priority 7: CSS path
-    return buildCssPath(el);
+    return null;
+  }
+
+  function isInputElement(el) {
+    var tag = el.tagName.toLowerCase();
+    return tag === 'input' || tag === 'textarea' || tag === 'select';
+  }
+
+  function isFormElement(el) {
+    var tag = el.tagName.toLowerCase();
+    return tag === 'input' || tag === 'textarea' || tag === 'select' || tag === 'button';
   }
 
   function implicitRole(el) {
-    const tag = el.tagName.toLowerCase();
-    const type = (el.type || '').toLowerCase();
-    const roles = {
+    var tag = el.tagName.toLowerCase();
+    var type = (el.type || '').toLowerCase();
+    var roles = {
       a: 'link', button: 'button', select: 'combobox',
       textarea: 'textbox', h1: 'heading', h2: 'heading',
       h3: 'heading', h4: 'heading', h5: 'heading', h6: 'heading',
       nav: 'navigation', main: 'main', img: 'img',
     };
     if (tag === 'input') {
-      const inputRoles = {
+      var inputRoles = {
         checkbox: 'checkbox', radio: 'radio', range: 'slider',
         search: 'search', text: 'textbox', email: 'textbox',
         tel: 'textbox', url: 'textbox', password: 'textbox',
@@ -75,69 +118,193 @@ const CAPTURE_SCRIPT = `
     return roles[tag] || null;
   }
 
-  function isInputElement(el) {
-    const tag = el.tagName.toLowerCase();
-    return tag === 'input' || tag === 'textarea' || tag === 'select';
-  }
-
   function buildCssPath(el) {
-    const parts = [];
-    let current = el;
-    while (current && current !== document.body && current !== document.documentElement) {
-      let part = current.tagName.toLowerCase();
-      if (current.className && typeof current.className === 'string') {
-        const cls = current.className.trim().split(/\\s+/).filter(c => c.length > 0 && !c.startsWith('__')).slice(0, 2);
-        if (cls.length > 0) part += '.' + cls.join('.');
+    var maxDepth = 5;
+    for (var depth = 3; depth <= maxDepth; depth++) {
+      var parts = [];
+      var current = el;
+      while (current && current !== document.body && current !== document.documentElement) {
+        var part = current.tagName.toLowerCase();
+        if (current.className && typeof current.className === 'string') {
+          var cls = getStableClasses(current).slice(0, 2);
+          if (cls.length > 0) part += '.' + cls.map(function(c) { return CSS.escape(c); }).join('.');
+        }
+        var parent = current.parentElement;
+        if (parent) {
+          var siblings = Array.from(parent.children).filter(function(s) { return s.tagName === current.tagName; });
+          if (siblings.length > 1) {
+            var idx = siblings.indexOf(current) + 1;
+            part += ':nth-of-type(' + idx + ')';
+          }
+        }
+        parts.unshift(part);
+        current = current.parentElement;
+        if (parts.length >= depth) break;
       }
-      // Add nth-child if needed for uniqueness
-      const parent = current.parentElement;
+      var sel = parts.join(' > ');
+      if (isUnique(sel, el)) return sel;
+    }
+    // Final fallback: return deepest attempt even if not unique
+    var parts = [];
+    var current = el;
+    while (current && current !== document.body && current !== document.documentElement) {
+      var part = current.tagName.toLowerCase();
+      var parent = current.parentElement;
       if (parent) {
-        const siblings = Array.from(parent.children).filter(s => s.tagName === current.tagName);
+        var siblings = Array.from(parent.children).filter(function(s) { return s.tagName === current.tagName; });
         if (siblings.length > 1) {
-          const idx = siblings.indexOf(current) + 1;
-          part += ':nth-child(' + idx + ')';
+          var idx = siblings.indexOf(current) + 1;
+          part += ':nth-of-type(' + idx + ')';
         }
       }
       parts.unshift(part);
       current = current.parentElement;
-      // Stop at 3 levels to keep selectors short
-      if (parts.length >= 3) break;
+      if (parts.length >= 5) break;
     }
     return parts.join(' > ');
   }
 
+  // --- Main selector function ---
+
+  function getSelector(el) {
+    var tag = el.tagName ? el.tagName.toLowerCase() : '';
+    console.log('[QA Studio] getSelector for <' + tag + '> id=' + el.id + ' classes=' + (typeof el.className === 'string' ? el.className : '') + ' aria-label=' + (el.getAttribute ? el.getAttribute('aria-label') : ''));
+
+    // Priority 1: data-testid
+    if (el.dataset && el.dataset.testid) {
+      var sel = '[data-testid="' + escAttr(el.dataset.testid) + '"]';
+      if (isUnique(sel, el)) return 'data-testid=' + el.dataset.testid;
+      console.log('[QA Studio] P1 data-testid not unique: ' + sel);
+    }
+
+    // Priority 2: id (skip dynamic IDs)
+    if (el.id && !isDynamic(el.id)) {
+      var sel = '#' + CSS.escape(el.id);
+      if (isUnique(sel, el)) return sel;
+      console.log('[QA Studio] P2 id not unique: ' + sel);
+    }
+
+    // Priority 3: name attribute (form elements)
+    if (isFormElement(el) && el.getAttribute('name')) {
+      var name = el.getAttribute('name');
+      var sel = tag + '[name="' + escAttr(name) + '"]';
+      if (isUnique(sel, el)) return sel;
+      console.log('[QA Studio] P3 name not unique: ' + sel);
+    }
+
+    // Priority 4: unique class-based selector
+    var classSel = tryClassSelector(el);
+    if (classSel) return classSel;
+    console.log('[QA Studio] P4 no unique class selector. stableClasses=' + JSON.stringify(getStableClasses(el)));
+
+    // Priority 5: placeholder
+    if (el.placeholder) {
+      var sel = '[placeholder="' + escAttr(el.placeholder) + '"]';
+      if (isUnique(sel, el)) return sel;
+      // Also try tag-qualified
+      var sel2 = tag + sel;
+      if (isUnique(sel2, el)) return sel2;
+      console.log('[QA Studio] P5 placeholder not unique');
+    }
+
+    // Priority 6: aria-label (try plain and tag-qualified)
+    var ariaLabel = el.getAttribute ? el.getAttribute('aria-label') : null;
+    if (ariaLabel) {
+      var sel = '[aria-label="' + escAttr(ariaLabel) + '"]';
+      if (isUnique(sel, el)) return sel;
+      var sel2 = tag + sel;
+      if (isUnique(sel2, el)) return sel2;
+      console.log('[QA Studio] P6 aria-label not unique: ' + sel + ' / ' + sel2);
+    }
+
+    // Priority 7: label (via el.labels or closest label)
+    if (el.labels && el.labels.length === 1) {
+      var labelText = el.labels[0].textContent.trim();
+      if (labelText) return 'label=' + labelText;
+    }
+    var closestLabel = el.closest && el.closest('label');
+    if (closestLabel) {
+      var labelText = closestLabel.textContent.trim();
+      if (labelText) return 'label=' + labelText;
+    }
+
+    // Priority 8: role + accessible name
+    var role = el.getAttribute ? (el.getAttribute('role') || implicitRole(el)) : implicitRole(el);
+    var accessName = (el.getAttribute ? el.getAttribute('aria-label') : null) ||
+      el.textContent?.trim().slice(0, 50);
+    if (role && accessName) {
+      console.log('[QA Studio] P8 falling back to role: role=' + role + ' name=' + accessName);
+      return 'role=' + role + '[name="' + accessName.replace(/"/g, '\\\\"') + '"]';
+    }
+
+    // Priority 9: text content (non-inputs, short text)
+    if (!isInputElement(el) && el.textContent?.trim()) {
+      var text = el.textContent.trim();
+      if (text.length <= 50) return 'text=' + text;
+    }
+
+    // Priority 10: CSS path
+    return buildCssPath(el);
+  }
+
+  // Walk up from e.target to find the nearest interactive/clickable element.
+  // When you click an icon inside <a class="cmd-close"><svg>...</svg></a>,
+  // e.target is the <svg>, but we want the <a> which has the useful selector.
+  function findClickTarget(el) {
+    var interactiveTags = { A: 1, BUTTON: 1, INPUT: 1, SELECT: 1, TEXTAREA: 1 };
+    var current = el;
+    while (current && current !== document.body) {
+      // Stop at elements with explicit role="button" or role="link"
+      var role = current.getAttribute && current.getAttribute('role');
+      if (role === 'button' || role === 'link' || role === 'menuitem' || role === 'tab') return current;
+      // Stop at native interactive elements
+      if (interactiveTags[current.tagName]) return current;
+      // Stop at elements with data-testid, id, or click-relevant classes
+      if (current.dataset && current.dataset.testid) return current;
+      if (current.id && !isDynamic(current.id)) return current;
+      // Stop at elements with an onclick handler attribute
+      if (current.hasAttribute && current.hasAttribute('onclick')) return current;
+      current = current.parentElement;
+    }
+    // No interactive parent found — use the original element
+    return el;
+  }
+
+  // --- Event handlers ---
+
   // Click handler
-  document.addEventListener('click', (e) => {
-    const el = e.target;
-    if (!el || el === document.body) return;
-    const selector = getSelector(el);
+  document.addEventListener('click', function(e) {
+    var rawEl = e.target;
+    if (!rawEl || rawEl === document.body) return;
+    var el = findClickTarget(rawEl);
+    var selector = getSelector(el);
 
     // If it's a checkbox or radio, capture as check/uncheck
     if (el.tagName === 'INPUT' && (el.type === 'checkbox' || el.type === 'radio')) {
       window.__qaStudioCapture(JSON.stringify({
         action: el.checked ? 'check' : 'uncheck',
-        selector,
+        selector: selector,
       }));
       return;
     }
 
     window.__qaStudioCapture(JSON.stringify({
       action: 'click',
-      selector,
+      selector: selector,
     }));
   }, true);
 
   // Input handler (debounced)
-  document.addEventListener('input', (e) => {
-    const el = e.target;
+  document.addEventListener('input', function(e) {
+    var el = e.target;
     if (!el) return;
-    const selector = getSelector(el);
+    var selector = getSelector(el);
 
     // Handle select elements
     if (el.tagName === 'SELECT') {
       window.__qaStudioCapture(JSON.stringify({
         action: 'select',
-        selector,
+        selector: selector,
         value: el.value,
       }));
       return;
@@ -148,10 +315,10 @@ const CAPTURE_SCRIPT = `
       clearTimeout(inputTimer);
     }
     lastInputSelector = selector;
-    inputTimer = setTimeout(() => {
+    inputTimer = setTimeout(function() {
       window.__qaStudioCapture(JSON.stringify({
         action: 'fill',
-        selector,
+        selector: selector,
         value: el.value,
       }));
       inputTimer = null;

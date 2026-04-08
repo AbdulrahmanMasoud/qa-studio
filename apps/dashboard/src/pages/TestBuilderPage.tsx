@@ -56,6 +56,7 @@ export default function TestBuilderPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [useRealChrome, setUseRealChrome] = useState(false);
+  const [stepDelay, setStepDelay] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [showRunHistory, setShowRunHistory] = useState(false);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
@@ -98,6 +99,7 @@ export default function TestBuilderPage() {
     if (test) {
       setSteps(test.steps || []);
       setUseRealChrome(test.config?.useRealChrome ?? false);
+      setStepDelay(test.config?.stepDelay ?? 0);
       if (test.projectId) {
         // We don't have baseUrl from project here, so leave recorderUrl as-is if already set
       }
@@ -120,7 +122,7 @@ export default function TestBuilderPage() {
     mutationFn: (stepsToSave: TestStep[]) =>
       testsApi.update(testId!, {
         steps: stepsToSave,
-        config: { ...test?.config, useRealChrome },
+        config: { ...test?.config, useRealChrome, stepDelay },
       }),
     onSuccess: () => {
       setHasChanges(false);
@@ -473,6 +475,26 @@ export default function TestBuilderPage() {
                   )}
                 />
               </button>
+            </label>
+            <label
+              className="flex items-center gap-2 select-none"
+              title="Delay (ms) before each step executes — helps with slow-loading pages and popups"
+            >
+              <span className="text-sm text-gray-600">Step Delay</span>
+              <input
+                type="number"
+                min={0}
+                max={10000}
+                step={100}
+                value={stepDelay}
+                onChange={(e) => {
+                  setStepDelay(Number(e.target.value) || 0);
+                  setHasChanges(true);
+                }}
+                className="w-20 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="0"
+              />
+              <span className="text-xs text-gray-400">ms</span>
             </label>
             <button
               onClick={handleToggleRecorder}

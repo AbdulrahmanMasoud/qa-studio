@@ -169,6 +169,7 @@ export interface TestConfig {
   timeout: number;
   headless: boolean;
   useRealChrome?: boolean;
+  stepDelay?: number;
 }
 
 export const defaultTestConfig: TestConfig = {
@@ -177,6 +178,7 @@ export const defaultTestConfig: TestConfig = {
   timeout: 30000,
   headless: true,
   useRealChrome: false,
+  stepDelay: 0,
 };
 
 // --------------------------------------------

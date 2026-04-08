@@ -387,6 +387,11 @@ export async function runTest(test: TestDefinition, onProgress?: (run: Partial<T
         continue;
       }
 
+      // Apply step delay if configured
+      if (test.config.stepDelay && test.config.stepDelay > 0) {
+        await page.waitForTimeout(test.config.stepDelay);
+      }
+
       // Handle control flow steps
       if (step.action === 'if') {
         const condition = (step as any).condition;
