@@ -29,6 +29,7 @@ import {
   Video,
   StopCircle,
   Eye,
+  Monitor,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { testsApi, recorderApi } from '../lib/api';
@@ -38,6 +39,7 @@ import {
   StepResult,
   ActionType,
   createEmptyStep,
+  deviceList,
 } from '@qa-studio/shared';
 import clsx from 'clsx';
 import SortableStep, { StepRunStatus } from '../components/SortableStep';
@@ -46,6 +48,7 @@ import StepEditor from '../components/StepEditor';
 import RunHistoryPanel from '../components/RunHistoryPanel';
 import RunDetailPanel from '../components/RunDetailPanel';
 import RecorderBar from '../components/RecorderBar';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function TestBuilderPage() {
   const { testId } = useParams<{ testId: string }>();
@@ -57,6 +60,8 @@ export default function TestBuilderPage() {
   const [hasChanges, setHasChanges] = useState(false);
   const [useRealChrome, setUseRealChrome] = useState(false);
   const [stepDelay, setStepDelay] = useState(0);
+  const [device, setDevice] = useState<string | null>(null);
+  const [pendingDevice, setPendingDevice] = useState<string | null | undefined>(undefined);
   const [isRunning, setIsRunning] = useState(false);
   const [showRunHistory, setShowRunHistory] = useState(false);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
@@ -101,6 +106,7 @@ export default function TestBuilderPage() {
       setSteps(test.steps || []);
       setUseRealChrome(test.config?.useRealChrome ?? false);
       setStepDelay(test.config?.stepDelay ?? 0);
+      setDevice(test.config?.device ?? null);
       if (test.projectId) {
         // We don't have baseUrl from project here, so leave recorderUrl as-is if already set
       }
@@ -123,7 +129,7 @@ export default function TestBuilderPage() {
     mutationFn: (stepsToSave: TestStep[]) =>
       testsApi.update(testId!, {
         steps: stepsToSave,
-        config: { ...test?.config, useRealChrome, stepDelay },
+        config: { ...test?.config, useRealChrome, stepDelay, device },
       }),
     onSuccess: () => {
       setHasChanges(false);
@@ -187,7 +193,7 @@ export default function TestBuilderPage() {
     if (!testId || !recorderUrl) return;
     setIsRecorderStarting(true);
     try {
-      const { sessionId } = await recorderApi.start(testId, recorderUrl, { recordDelays });
+      const { sessionId } = await recorderApi.start(testId, recorderUrl, { recordDelays, device });
       setRecorderSessionId(sessionId);
       setIsRecording(true);
       setRecordedStepCount(0);
@@ -244,7 +250,7 @@ export default function TestBuilderPage() {
     } finally {
       setIsRecorderStarting(false);
     }
-  }, [testId, recorderUrl, recordDelays]);
+  }, [testId, recorderUrl, recordDelays, device]);
 
   const handleStopRecording = useCallback(async () => {
     if (recorderSessionId) {
@@ -455,6 +461,42 @@ export default function TestBuilderPage() {
                 )}
               </div>
             )}
+            <label
+              className="flex items-center gap-2 select-none"
+              title="Emulate a device (viewport, user agent, touch, scale)"
+            >
+              <Monitor className="h-4 w-4 text-gray-400" />
+              <select
+                value={device || ''}
+                onChange={(e) => {
+                  const newDevice = e.target.value || null;
+                  if (steps.length > 0 && newDevice !== device) {
+                    setPendingDevice(newDevice);
+                    return;
+                  }
+                  setDevice(newDevice);
+                  setHasChanges(true);
+                }}
+                className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+              >
+                <option value="">Custom viewport</option>
+                <optgroup label="Phones">
+                  {deviceList.filter((d) => d.category === 'phone').map((d) => (
+                    <option key={d.name} value={d.name}>{d.name}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Tablets">
+                  {deviceList.filter((d) => d.category === 'tablet').map((d) => (
+                    <option key={d.name} value={d.name}>{d.name}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Desktop">
+                  {deviceList.filter((d) => d.category === 'desktop').map((d) => (
+                    <option key={d.name} value={d.name}>{d.name}</option>
+                  ))}
+                </optgroup>
+              </select>
+            </label>
             <label
               className="flex items-center gap-2 cursor-pointer select-none"
               title={useRealChrome ? 'Using real Chrome (bypasses bot detection)' : 'Using default Playwright browser'}
@@ -667,6 +709,21 @@ export default function TestBuilderPage() {
           />
         )}
       </div>
+
+      {pendingDevice !== undefined && (
+        <ConfirmDialog
+          title="Change device?"
+          message="Steps recorded on one device may not work on another due to different layouts, selectors, and interactions."
+          confirmLabel="Change Device"
+          cancelLabel="Keep Current"
+          onConfirm={() => {
+            setDevice(pendingDevice);
+            setHasChanges(true);
+            setPendingDevice(undefined);
+          }}
+          onCancel={() => setPendingDevice(undefined)}
+        />
+      )}
     </div>
   );
 }

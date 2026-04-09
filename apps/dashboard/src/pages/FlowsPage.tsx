@@ -4,12 +4,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, ArrowLeft, Loader2, Workflow } from 'lucide-react';
 import { toast } from 'sonner';
 import { projectsApi, flowsApi } from '../lib/api';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function FlowsPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [newFlowName, setNewFlowName] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const { data: project } = useQuery({
     queryKey: ['projects', projectId],
@@ -154,7 +156,7 @@ export default function FlowsPage() {
                   </Link>
                   <button
                     onClick={() => {
-                      if (confirm(`Delete flow "${flow.name}"?`)) deleteMutation.mutate(flow.id);
+                      setDeleteTarget({ id: flow.id, name: flow.name });
                     }}
                     className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   >
@@ -165,6 +167,20 @@ export default function FlowsPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {deleteTarget && (
+        <ConfirmDialog
+          variant="danger"
+          title={`Delete "${deleteTarget.name}"?`}
+          message="This will permanently delete the flow. Tests using this flow may break."
+          confirmLabel="Delete Flow"
+          onConfirm={() => {
+            deleteMutation.mutate(deleteTarget.id);
+            setDeleteTarget(null);
+          }}
+          onCancel={() => setDeleteTarget(null)}
+        />
       )}
     </div>
   );

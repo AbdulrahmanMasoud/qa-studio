@@ -13,10 +13,12 @@ A no-code end-to-end testing platform powered by Playwright. Build, record, run,
 ### Core Testing
 - **Visual Test Builder** — Drag-and-drop interface with 17 action types, selector helpers, and live step editing
 - **Cross-Browser Testing** — Run tests on Chromium, Firefox, and WebKit
-- **Test Recording** — Record browser interactions via WebSocket streaming with intelligent selector generation
+- **Test Recording** — Record browser interactions via WebSocket streaming with intelligent selector generation (10-tier priority with uniqueness validation)
+- **Record Delays** — Optionally capture natural timing between actions as automatic Wait steps
 - **Live Execution** — Watch test progress in real time with step-by-step SSE streaming
 - **Video Recording** — Every test run is automatically captured as video
 - **Failure Screenshots** — Automatic screenshots on step failures
+- **Visual Mouse Cursor** — Red dot indicator follows the mouse during Real Browser test runs
 
 ### Visual Regression
 - **Baseline Management** — Set baseline screenshots from passing runs
@@ -52,15 +54,17 @@ A no-code end-to-end testing platform powered by Playwright. Build, record, run,
 - **Paginated History** — Efficient browsing of large run histories
 
 ### Browser Configuration
+- **Device Emulation** — Test on 17+ pre-configured devices (iPhone 15, iPad Pro, Galaxy S24, Desktop Chrome, etc.) with automatic viewport, user agent, touch, and scale settings
 - **Real Browser Mode** — Use system Chrome to bypass bot detection (Cloudflare, Akamai, etc.)
 - **Browser Permissions** — Grant geolocation, camera, microphone, clipboard, and notifications
 - **Mock Geolocation** — Set custom latitude/longitude coordinates
+- **Step Delay** — Configurable delay (ms) before each step to handle slow-loading pages
 - **Viewport & Timeout** — Configurable per-test browser settings
 
 ### UI/UX
 - **Project Organization** — Group tests by project with base URLs and environment variables
 - **Toast Notifications** — Success/error feedback for all actions
-- **Confirmation Dialogs** — Safety prompts for destructive operations
+- **Confirmation Dialogs** — Styled modal dialogs for destructive operations (delete project/test/flow) and warnings (device change)
 - **Search & Filter** — Find tests by name and filter by status
 
 ## Quick Start
@@ -115,11 +119,15 @@ The Test Builder has a three-panel layout:
 
 ### 4. Record a Test
 
-Click the **Record** button to open the recorder bar. Enter a start URL and click **Start Recording**. A browser window opens and captures your interactions:
+Click the **Record** button to open the recorder bar. Enter a start URL, optionally select a device and toggle **Record Delays**, then click **Start Recording**. A browser window opens in the foreground and captures your interactions:
 
 - Clicks, text input, dropdown selections, and checkbox toggles are recorded automatically
-- Selectors are generated using a 7-tier priority: `data-testid` > `id` > `role+name` > `placeholder` > `label` > `text content` > CSS path
+- Selectors are generated using a smart 10-tier priority system with **uniqueness validation**:
+  1. `data-testid` → 2. `id` → 3. `name` attr → 4. **unique class** → 5. `placeholder` → 6. `aria-label` → 7. `label` → 8. `role+name` → 9. `text content` → 10. CSS path
+- Each candidate selector is validated via `querySelectorAll` to ensure it matches exactly one element
+- Dynamic/generated class names (CSS modules, styled-components, etc.) are automatically filtered out
 - Text input is debounced (800ms) to capture complete values
+- **Record Delays** — When enabled, natural pauses between actions (>500ms) are captured as Wait steps
 - Click **Stop Recording** to save the captured steps to your test
 
 ### 5. Run Your Test
@@ -255,11 +263,13 @@ Each test has configurable settings accessible from the test builder header:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Browser | Chromium | `chromium`, `firefox`, or `webkit` |
-| Viewport | 1280×720 | Browser window dimensions |
+| Device | Custom | Emulate a device (iPhone 15, iPad Pro, Galaxy S24, etc.) — sets viewport, user agent, touch, and scale automatically |
+| Browser | Chromium | `chromium`, `firefox`, or `webkit` (auto-selected when a device is chosen) |
+| Viewport | 1280×720 | Browser window dimensions (overridden by device selection) |
 | Timeout | 30000ms | Maximum wait time per step (1s–120s) |
+| Step Delay | 0ms | Delay before each step executes (0–10000ms) |
 | Headless | true | Run without visible browser window |
-| Real Browser | false | Use system Chrome with anti-detection |
+| Real Browser | false | Use system Chrome with anti-detection and visible mouse cursor |
 | Permissions | none | Browser permissions to grant |
 | Geolocation | none | Mock latitude/longitude coordinates |
 
@@ -288,12 +298,36 @@ Some websites use bot detection services (Cloudflare Turnstile, Akamai, etc.) th
 | Browser fingerprint | Playwright Chromium build | Actual Chrome binary |
 | Automation flags | Present | Disabled |
 | User agent | Playwright default | Realistic Chrome UA |
+| Mouse cursor | Not visible | Red dot indicator with click animation |
 
 **When to use:**
 - **Off (default)** — For most websites. Faster, runs headless.
-- **On** — For sites with Cloudflare, Akamai, or other bot protection. Runs headed (browser window visible).
+- **On** — For sites with Cloudflare, Akamai, or other bot protection. Runs headed with a visible red mouse cursor that follows interactions.
 
 Requires Google Chrome installed on the server machine.
+
+## Device Emulation
+
+Select a device from the dropdown in the test builder to emulate real devices. Each device profile configures:
+
+- **Viewport** — Device-specific screen dimensions
+- **User Agent** — Device-specific browser string
+- **Device Scale Factor** — Retina/HiDPI scaling
+- **Touch Support** — Enables touch events for mobile devices
+- **Mobile Flag** — Triggers mobile-specific website behavior
+- **Browser Engine** — Automatically selects the correct engine (e.g., WebKit for iPhones)
+
+### Available Devices
+
+| Category | Devices |
+|----------|---------|
+| **Phones** | iPhone 15 Pro Max, iPhone 15 Pro, iPhone 15, iPhone 14, iPhone SE (3rd gen), Galaxy S24, Galaxy A55, Pixel 7, Pixel 5 |
+| **Tablets** | iPad Pro 11, iPad (gen 11), iPad Mini, Galaxy Tab S9 |
+| **Desktop** | Desktop Chrome, Desktop Safari, Desktop Firefox, Desktop Chrome HiDPI |
+
+Select **Custom viewport** to use manual width/height instead of a device profile.
+
+**Note:** The device is locked after recording. Changing the device on a test with existing steps shows a warning, since steps recorded on one device (e.g., mobile hamburger menu) may not work on another (e.g., desktop nav bar).
 
 ## Project Structure
 

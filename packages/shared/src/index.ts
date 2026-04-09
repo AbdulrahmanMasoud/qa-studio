@@ -170,6 +170,7 @@ export interface TestConfig {
   headless: boolean;
   useRealChrome?: boolean;
   stepDelay?: number;
+  device?: string | null;
 }
 
 export const defaultTestConfig: TestConfig = {
@@ -179,7 +180,40 @@ export const defaultTestConfig: TestConfig = {
   headless: true,
   useRealChrome: false,
   stepDelay: 0,
+  device: null,
 };
+
+// --------------------------------------------
+// Device Emulation
+// --------------------------------------------
+
+export interface DeviceOption {
+  name: string;
+  category: 'phone' | 'tablet' | 'desktop';
+}
+
+export const deviceList: DeviceOption[] = [
+  // Phones
+  { name: 'iPhone 15 Pro Max', category: 'phone' },
+  { name: 'iPhone 15 Pro', category: 'phone' },
+  { name: 'iPhone 15', category: 'phone' },
+  { name: 'iPhone 14', category: 'phone' },
+  { name: 'iPhone SE (3rd gen)', category: 'phone' },
+  { name: 'Galaxy S24', category: 'phone' },
+  { name: 'Galaxy A55', category: 'phone' },
+  { name: 'Pixel 7', category: 'phone' },
+  { name: 'Pixel 5', category: 'phone' },
+  // Tablets
+  { name: 'iPad Pro 11', category: 'tablet' },
+  { name: 'iPad (gen 11)', category: 'tablet' },
+  { name: 'iPad Mini', category: 'tablet' },
+  { name: 'Galaxy Tab S9', category: 'tablet' },
+  // Desktop
+  { name: 'Desktop Chrome', category: 'desktop' },
+  { name: 'Desktop Safari', category: 'desktop' },
+  { name: 'Desktop Firefox', category: 'desktop' },
+  { name: 'Desktop Chrome HiDPI', category: 'desktop' },
+];
 
 // --------------------------------------------
 // Test Definition

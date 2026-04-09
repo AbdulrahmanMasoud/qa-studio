@@ -5,12 +5,14 @@ import { Plus, FolderOpen, Trash2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { projectsApi } from '../lib/api';
 import type { Project } from '@qa-studio/shared';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function ProjectsPage() {
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectUrl, setNewProjectUrl] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ['projects'],
@@ -46,9 +48,7 @@ export default function ProjectsPage() {
   };
 
   const handleDelete = (project: Project) => {
-    if (confirm(`Delete project "${project.name}"? This will delete all tests.`)) {
-      deleteMutation.mutate(project.id);
-    }
+    setDeleteTarget(project);
   };
 
   return (
@@ -176,6 +176,19 @@ export default function ProjectsPage() {
             </div>
           ))}
         </div>
+      )}
+      {deleteTarget && (
+        <ConfirmDialog
+          variant="danger"
+          title={`Delete "${deleteTarget.name}"?`}
+          message="This will permanently delete the project and all its tests, suites, and flows."
+          confirmLabel="Delete Project"
+          onConfirm={() => {
+            deleteMutation.mutate(deleteTarget.id);
+            setDeleteTarget(null);
+          }}
+          onCancel={() => setDeleteTarget(null)}
+        />
       )}
     </div>
   );

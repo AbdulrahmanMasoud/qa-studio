@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { projectsApi, testsApi, suiteRunsApi, analyticsApi } from '../lib/api';
 import EnvironmentVariablesModal from '../components/EnvironmentVariablesModal';
 import BatchRunProgress, { BatchTestStatus } from '../components/BatchRunProgress';
+import ConfirmDialog from '../components/ConfirmDialog';
 import clsx from 'clsx';
 
 export default function TestsPage() {
@@ -33,6 +34,7 @@ export default function TestsPage() {
   const [batchStatuses, setBatchStatuses] = useState<BatchTestStatus[]>([]);
   const [showBatchProgress, setShowBatchProgress] = useState(false);
   const [concurrency, setConcurrency] = useState(1);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const { data: project } = useQuery({
     queryKey: ['projects', projectId],
@@ -109,9 +111,7 @@ export default function TestsPage() {
   };
 
   const handleDelete = (test: { id: string; name: string }) => {
-    if (confirm(`Delete test "${test.name}"?`)) {
-      deleteMutation.mutate(test.id);
-    }
+    setDeleteTarget(test);
   };
 
   const handleRun = (testId: string) => {
@@ -430,6 +430,20 @@ export default function TestsPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {deleteTarget && (
+        <ConfirmDialog
+          variant="danger"
+          title={`Delete "${deleteTarget.name}"?`}
+          message="This will permanently delete the test and all its run history."
+          confirmLabel="Delete Test"
+          onConfirm={() => {
+            deleteMutation.mutate(deleteTarget.id);
+            setDeleteTarget(null);
+          }}
+          onCancel={() => setDeleteTarget(null)}
+        />
       )}
     </div>
   );

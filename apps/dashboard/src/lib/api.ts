@@ -336,10 +336,10 @@ export const visualRegressionApi = {
 
 // Recorder
 export const recorderApi = {
-  start: (testId: string, startUrl: string, options?: { recordDelays?: boolean }) =>
+  start: (testId: string, startUrl: string, options?: { recordDelays?: boolean; device?: string | null }) =>
     fetchApi<{ sessionId: string }>('/recorder/start', {
       method: 'POST',
-      body: JSON.stringify({ testId, startUrl, recordDelays: options?.recordDelays ?? false }),
+      body: JSON.stringify({ testId, startUrl, recordDelays: options?.recordDelays ?? false, device: options?.device ?? null }),
     }),
 
   stop: (sessionId: string) =>

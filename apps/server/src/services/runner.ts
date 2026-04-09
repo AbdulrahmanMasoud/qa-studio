@@ -1,4 +1,4 @@
-import { chromium, firefox, webkit, Browser, Page, BrowserContext } from 'playwright';
+import { chromium, firefox, webkit, devices, Browser, Page, BrowserContext } from 'playwright';
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import {
@@ -69,7 +69,13 @@ async function getBrowser(config: TestConfig): Promise<Browser> {
 
   const options = { headless: config.headless };
 
-  switch (config.browser) {
+  // Use the device's default browser type if a device is selected
+  let browserType = config.browser;
+  if (config.device && devices[config.device]) {
+    browserType = devices[config.device].defaultBrowserType;
+  }
+
+  switch (browserType) {
     case 'firefox':
       return firefox.launch(options);
     case 'webkit':
@@ -350,8 +356,20 @@ export async function runTest(test: TestDefinition, onProgress?: (run: Partial<T
       recordVideo: { dir: videoDir },
     };
 
+    // Apply device emulation if a device is selected
+    if (test.config.device && devices[test.config.device]) {
+      const deviceDesc = devices[test.config.device];
+      Object.assign(contextOptions, {
+        viewport: deviceDesc.viewport,
+        userAgent: deviceDesc.userAgent,
+        deviceScaleFactor: deviceDesc.deviceScaleFactor,
+        isMobile: deviceDesc.isMobile,
+        hasTouch: deviceDesc.hasTouch,
+      });
+    }
+
     // When using real Chrome, set a realistic user agent to avoid detection
-    if (test.config.useRealChrome) {
+    if (test.config.useRealChrome && !test.config.device) {
       contextOptions.userAgent =
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
     }

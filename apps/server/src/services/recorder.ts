@@ -1,4 +1,4 @@
-import { chromium, Browser, Page, BrowserContext } from 'playwright';
+import { chromium, firefox, webkit, devices, Browser, Page, BrowserContext } from 'playwright';
 import { EventEmitter } from 'events';
 import { generateId, TestStep } from '@qa-studio/shared';
 
@@ -330,24 +330,43 @@ const CAPTURE_SCRIPT = `
 
 export interface RecorderOptions {
   recordDelays?: boolean;
+  device?: string | null;
 }
 
 export async function startRecording(testId: string, startUrl: string, options: RecorderOptions = {}): Promise<string> {
   const sessionId = generateId();
-  const { recordDelays = false } = options;
+  const { recordDelays = false, device = null } = options;
 
-  const browser = await chromium.launch({
+  // Use the device's default browser type, or chromium
+  const deviceDesc = device ? devices[device] : null;
+  const browserType = deviceDesc?.defaultBrowserType || 'chromium';
+  const launcher = browserType === 'firefox' ? firefox : browserType === 'webkit' ? webkit : chromium;
+
+  const browser = await launcher.launch({
     headless: false,
-    args: [
+    args: browserType === 'chromium' ? [
       '--disable-blink-features=AutomationControlled',
       '--no-first-run',
       '--no-default-browser-check',
-    ],
+    ] : [],
   });
 
-  const context = await browser.newContext({
+  const contextOptions: any = {
     viewport: { width: 1280, height: 720 },
-  });
+  };
+
+  // Apply device emulation
+  if (deviceDesc) {
+    Object.assign(contextOptions, {
+      viewport: deviceDesc.viewport,
+      userAgent: deviceDesc.userAgent,
+      deviceScaleFactor: deviceDesc.deviceScaleFactor,
+      isMobile: deviceDesc.isMobile,
+      hasTouch: deviceDesc.hasTouch,
+    });
+  }
+
+  const context = await browser.newContext(contextOptions);
 
   const page = await context.newPage();
   const emitter = new EventEmitter();
@@ -453,6 +472,9 @@ export async function startRecording(testId: string, startUrl: string, options: 
     // Inject script after initial navigation
     await page.evaluate(CAPTURE_SCRIPT);
   }
+
+  // Bring the browser window to the foreground
+  await page.bringToFront();
 
   return sessionId;
 }

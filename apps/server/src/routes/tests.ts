@@ -42,6 +42,8 @@ const testConfigSchema = z.object({
   timeout: z.number().min(1000).max(120000).optional(),
   headless: z.boolean().optional(),
   useRealChrome: z.boolean().optional(),
+  stepDelay: z.number().min(0).max(10000).optional(),
+  device: z.string().nullable().optional(),
 });
 
 const createTestSchema = z.object({
