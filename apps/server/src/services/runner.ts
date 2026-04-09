@@ -363,9 +363,63 @@ export async function runTest(test: TestDefinition, onProgress?: (run: Partial<T
       await context.addInitScript(() => {
         Object.defineProperty(navigator, 'webdriver', { get: () => false });
       });
+
     }
 
     const page = await context.newPage();
+
+    // Show a visible cursor during real browser test execution
+    if (test.config.useRealChrome) {
+      const injectCursor = async () => {
+        await page.evaluate(() => {
+          if (document.querySelector('.__qa-cursor')) return;
+
+          const style = document.createElement('style');
+          style.textContent = `
+            .__qa-cursor {
+              position: fixed;
+              z-index: 2147483647;
+              pointer-events: none;
+              width: 20px;
+              height: 20px;
+              border-radius: 50%;
+              background: rgba(220, 38, 38, 0.7);
+              border: 2px solid rgba(220, 38, 38, 0.9);
+              transform: translate(-50%, -50%);
+              transition: width 0.15s, height 0.15s, background 0.15s;
+              left: -100px;
+              top: -100px;
+            }
+            .__qa-cursor--click {
+              width: 34px;
+              height: 34px;
+              background: rgba(220, 38, 38, 0.3);
+            }
+          `;
+          document.head.appendChild(style);
+
+          const cursor = document.createElement('div');
+          cursor.className = '__qa-cursor';
+          document.body.appendChild(cursor);
+
+          document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+          }, true);
+
+          document.addEventListener('mousedown', () => {
+            cursor.classList.add('__qa-cursor--click');
+          }, true);
+
+          document.addEventListener('mouseup', () => {
+            setTimeout(() => cursor.classList.remove('__qa-cursor--click'), 150);
+          }, true);
+        }).catch(() => {});
+      };
+
+      // Re-inject cursor after every navigation
+      page.on('load', () => { injectCursor(); });
+    }
     
     // Resolve flows if resolver provided
     const resolver = flowResolver || createFlowResolver();
